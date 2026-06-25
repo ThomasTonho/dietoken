@@ -1,130 +1,97 @@
 # Dietoken
 
-Audit AI agent context and cut wasted tokens.
+**Stop paying for context you never asked for.**
 
 [![CI](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml/badge.svg)](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/dietoken.svg)](https://www.npmjs.com/package/dietoken)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green.svg)](https://nodejs.org)
 
-Dietoken is a CLI for projects using code agents like Codex and Claude Code. It analyzes instruction files, skills, rules, hooks, and configs to find always-on context that's too large, duplicate instructions, vague rules, and workflows that should live in skills or scoped rules.
+Dietoken audits the always-on context loaded by AI code agents — `CLAUDE.md`, `AGENTS.md`, rules, skills, hooks, and configs — and tells you exactly what's bloating your sessions before the first prompt is even sent.
 
-## Why it exists
+## The problem
 
-Code agents work best with short, clear, and relevant context. Files like `AGENTS.md`, `CLAUDE.md`, rules, and skills tend to become a dumping ground for conventions, workflows, warnings, and outdated preferences.
+Your `CLAUDE.md` started as one line. Then it grew.
 
-This creates two problems:
+Now every session loads 4,000 tokens of conventions, stale workflows, vague reminders, and rules that haven't mattered in months. The agent reads all of it. You pay for all of it. And the instructions that actually matter compete with the noise.
 
-- tokens are spent before the real task even starts;
-- important instructions compete with vague, duplicated, or stale rules.
-
-Dietoken surfaces that cost and helps you clean up.
+Dietoken surfaces that cost and shows you how to fix it.
 
 ## Install
 
 ```sh
+# One-liner (macOS / Linux)
 curl -fsSL https://raw.githubusercontent.com/ThomasTonho/dietoken/main/install.sh | sh
-```
 
-Or with npm:
-
-```sh
+# npm
 npm install -g dietoken
-```
 
-Or run without installing:
-
-```sh
+# No install
 npx dietoken scan
 ```
 
-## Quick start
-
-Analyze the current project:
+## Usage
 
 ```sh
-dietoken scan
+dietoken scan                    # Analyze the current project
+dietoken scan --include-user     # Include ~/.claude and ~/.codex global files
+dietoken scan --json             # Machine-readable output
+dietoken scan --cwd ../project   # Analyze another directory
+dietoken plan                    # Generate a step-by-step optimization plan
 ```
 
-Print JSON:
+## Example output
 
-```sh
-dietoken scan --json
+```
+$ dietoken scan
+
+  Files analyzed    6
+  Always-on tokens  3,820
+  Wasted tokens     1,340  ▓▓▓▓▓▓░░░░░░░░░░░░░  35%
+
+  Findings
+
+  ● large-always-on-file  CLAUDE.md
+    2,880 tokens loaded on every session.
+    → Move long workflows to skills. Keep only session-critical rules here.
+
+  ● workflow-in-always-on  AGENTS.md:42
+    Repeatable procedure found in always-on context.
+    → Convert to a skill so it loads only when invoked.
+
+  ● vague-rule  CLAUDE.md:17
+    "Write clean code and follow best practices."
+    → Remove or replace with a concrete, enforceable rule.
+
+  ● duplicate-instruction  CLAUDE.md ↔ .claude/rules/style.md
+    Same instruction appears in two places.
+    → Keep one authoritative source.
 ```
 
-Generate an optimization plan:
+## What it analyzes
 
-```sh
-dietoken plan
-```
+| Agent | Files scanned |
+|---|---|
+| **Claude Code** | `CLAUDE.md`, `CLAUDE.local.md`, `.claude/CLAUDE.md`, `.claude/rules/**`, `.claude/skills/**`, `.claude/settings.json` |
+| **Codex** | `AGENTS.md`, `AGENTS.override.md`, `.agents/skills/**`, `.codex/hooks.json`, `.codex/config.toml` |
 
-Analyze another directory:
+Pass `--include-user` to also scan global files in `~/.claude` and `~/.codex`.
 
-```sh
-dietoken scan --cwd ../my-project
-```
+## Findings explained
 
-Include global files from `~/.codex` and `~/.claude`:
-
-```sh
-dietoken scan --include-user
-```
-
-## What Dietoken analyzes
-
-**Codex:**
-
-- `AGENTS.md`
-- `AGENTS.override.md`
-- `.agents/skills/**/SKILL.md`
-- `.codex/hooks.json`
-- `.codex/config.toml`
-- optional files in `~/.codex/*`
-
-**Claude Code:**
-
-- `CLAUDE.md`
-- `CLAUDE.local.md`
-- `.claude/CLAUDE.md`
-- `.claude/rules/**/*.md`
-- `.claude/skills/**/SKILL.md`
-- `.claude/settings.json`
-- optional files in `~/.claude/*`
-
-## Findings
-
-Dietoken reports:
-
-- large always-on files;
-- vague rules like "use best practices" or "write clean code";
-- long workflows that should become skills;
-- path-specific instructions that should live closer to the right files;
-- prose rules that should be hooks or permission policies;
-- duplicate instructions across files.
-
-## Example
-
-```txt
-dietoken scan
-
-Files analyzed: 2
-Total context estimate: 4210 tokens
-Always-on estimate: 3820 tokens
-Estimated waste: 1340 tokens
-
-Findings
-- warning large-always-on-file CLAUDE.md
-  CLAUDE.md is always-on and has about 2880 tokens.
-  Suggestion: Keep only rules needed in every session. Move long workflows to skills or scoped rules.
-- warning workflow-in-always-on AGENTS.md:42
-  Workflow-like instruction appears in always-on context.
-  Suggestion: Move repeatable procedures to a skill so they load only when needed.
-```
+| Finding | What it means |
+|---|---|
+| `large-always-on-file` | File exceeds the token threshold and loads on every session |
+| `vague-rule` | Instruction like "use best practices" that an agent can't act on |
+| `workflow-in-always-on` | Step-by-step procedure that belongs in a skill, not global context |
+| `path-specific-instruction` | Rule scoped to one directory but loaded everywhere |
+| `prose-to-hook` | Rule that would be more reliably enforced as a hook or permission |
+| `duplicate-instruction` | Same instruction found across multiple files |
 
 ## Config
 
-Create `.dietokenrc.json`:
-
 ```json
+// .dietokenrc.json
 {
   "largeFileWarningTokens": 1500,
   "largeFileErrorTokens": 4000,
@@ -142,11 +109,11 @@ npm test
 
 ## Roadmap
 
-- `apply --dry-run` to generate optimized files.
-- Hook installer for Codex and Claude.
-- Support for Cursor, Gemini CLI, and Aider.
-- HTML report.
-- Optional per-model tokenizers.
+- [ ] `apply --dry-run` — generate optimized files without touching originals
+- [ ] Hook installer for Codex and Claude Code
+- [ ] Support for Cursor, Gemini CLI, and Aider
+- [ ] HTML report
+- [ ] Per-model tokenizers
 
 ## Design
 
