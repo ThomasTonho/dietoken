@@ -4,7 +4,7 @@ export function estimateTokens(input: string): number {
     return 0;
   }
 
-  const units = normalized.match(/[A-Za-z0-9_]+|[^\sA-Za-z0-9_]/g);
+  const units = normalized.match(/[\p{L}\p{N}_]+|[^\s\p{L}\p{N}_]/gu);
   if (!units) {
     return 0;
   }

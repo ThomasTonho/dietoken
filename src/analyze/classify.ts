@@ -8,7 +8,7 @@ const vaguePatterns = [
   /\bsimple\b/i,
   /\bgood\b/i,
   /\badequate\b/i,
-  /\bmelhor(?:es)? pratica/i,
+  /\bmelhor(?:es)? pr[aá]tica/i,
   /\bc[oó]digo limpo\b/i,
   /\badequado\b/i,
   /\bbem feito\b/i

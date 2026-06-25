@@ -1,10 +1,18 @@
 {
   "name": "dietoken",
   "version": "0.1.0",
-  "description": "Kill wasted tokens. Keep better context.",
+  "description": "Audite contexto de agentes de IA e corte desperdício de tokens.",
   "type": "module",
   "bin": {
     "dietoken": "./dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThomasTonho/dietoken.git"
+  },
+  "homepage": "https://github.com/ThomasTonho/dietoken#readme",
+  "bugs": {
+    "url": "https://github.com/ThomasTonho/dietoken/issues"
   },
   "files": [
     "dist",
@@ -18,12 +26,17 @@
     "check": "npm run build && npm test"
   },
   "keywords": [
-    "codex",
-    "claude-code",
     "ai-agents",
+    "cli",
+    "claude-code",
+    "codex",
+    "context-engineering",
+    "developer-tools",
+    "llm",
+    "prompt-engineering",
+    "token-optimization",
     "tokens",
-    "context",
-    "cli"
+    "typescript"
   ],
   "author": "ThomasTonho",
   "license": "MIT",

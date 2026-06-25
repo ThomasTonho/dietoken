@@ -1,21 +1,21 @@
 # Dietoken
 
-Mate tokens desperdicados. Mantenha contexto melhor.
+Audite contexto de agentes de IA e corte desperdício de tokens.
 
-Dietoken e uma ferramenta de dieta de tokens para agentes de codigo como Codex e Claude Code. Ela analisa arquivos de instrucao, skills, regras, hooks e configuracoes para encontrar contexto sempre ligado, regras duplicadas, instrucoes vagas e workflows que deveriam virar skills ou regras com escopo.
+Dietoken é uma CLI para projetos que usam agentes de código como Codex e Claude Code. Ela analisa arquivos de instrução, skills, regras, hooks e configurações para encontrar contexto sempre ligado grande demais, instruções duplicadas, regras vagas e workflows que deveriam ficar em skills ou regras com escopo.
 
 ## Por que existe
 
-Agentes de codigo funcionam melhor com contexto curto, claro e relevante. Arquivos como `AGENTS.md`, `CLAUDE.md`, rules e skills frequentemente viram deposito de tudo: convencoes, workflows, avisos, preferencias e lembretes.
+Agentes de código funcionam melhor com contexto curto, claro e relevante. Arquivos como `AGENTS.md`, `CLAUDE.md`, regras e skills podem virar depósito de convenções, workflows, avisos e preferências antigas.
 
 Isso cria dois problemas:
 
-- tokens sao gastos antes da tarefa real comecar;
-- instrucoes importantes competem com regras antigas, vagas ou duplicadas.
+- tokens são gastos antes da tarefa real começar;
+- instruções importantes competem com regras vagas, duplicadas ou desatualizadas.
 
-Dietoken mostra esse custo e ajuda a limpar.
+Dietoken mostra esse custo e ajuda a limpar o contexto.
 
-## Instalacao
+## Instalação
 
 ```bash
 npm install -g dietoken
@@ -27,7 +27,7 @@ Ou rode sem instalar:
 npx dietoken scan
 ```
 
-## Uso
+## Uso rápido
 
 Analisar o projeto atual:
 
@@ -41,7 +41,7 @@ Imprimir JSON:
 dietoken scan --json
 ```
 
-Gerar plano de otimizacao:
+Gerar um plano de otimização:
 
 ```bash
 dietoken plan
@@ -85,11 +85,11 @@ Claude Code:
 Dietoken reporta:
 
 - arquivos always-on grandes;
-- regras vagas como "use best practices" ou "codigo limpo";
+- regras vagas como "use best practices" ou "código limpo";
 - workflows longos que deveriam virar skills;
-- instrucoes especificas de path que deveriam ficar perto dos arquivos certos;
-- regras em texto que deveriam virar hooks ou politicas de permissao;
-- instrucoes duplicadas entre arquivos.
+- instruções específicas de path que deveriam ficar perto dos arquivos certos;
+- regras em texto que deveriam virar hooks ou políticas de permissão;
+- instruções duplicadas entre arquivos.
 
 ## Exemplo
 
@@ -110,7 +110,7 @@ Findings
   Suggestion: Move repeatable procedures to a skill so they load only when needed.
 ```
 
-## Configuracao
+## Configuração
 
 Crie `.dietokenrc.json`:
 
@@ -123,18 +123,29 @@ Crie `.dietokenrc.json`:
 }
 ```
 
+## Desenvolvimento
+
+```bash
+npm install
+npm test
+```
+
+## Tags
+
+`ai-agents` `cli` `claude-code` `codex` `context-engineering` `developer-tools` `llm` `prompt-engineering` `token-optimization` `tokens` `typescript`
+
 ## Roadmap
 
 - `apply --dry-run` para arquivos otimizados gerados.
 - Instalador de hooks para Codex e Claude.
 - Suporte a Cursor, Gemini CLI e Aider.
-- Relatorio HTML.
-- Tokenizers especificos por modelo, opcionais.
+- Relatório HTML.
+- Tokenizers específicos por modelo, opcionais.
 
 ## Design
 
 Veja [docs/SDD.pt-BR.md](docs/SDD.pt-BR.md).
 
-## Licenca
+## Licença
 
 MIT

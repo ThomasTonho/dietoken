@@ -1,65 +1,65 @@
 # Dietoken
 
-Kill wasted tokens. Keep better context.
+Audite contexto de agentes de IA e corte desperdício de tokens.
 
-Dietoken is a token diet tool for AI coding agents like Codex and Claude Code. It scans instruction files, skills, rules, hooks, and config files to find always-on context bloat, duplicated guidance, vague rules, and workflows that should move into skills or scoped rules.
+Dietoken é uma CLI para projetos que usam agentes de código como Codex e Claude Code. Ela analisa arquivos de instrução, skills, regras, hooks e configurações para encontrar contexto sempre ligado grande demais, instruções duplicadas, regras vagas e workflows que deveriam ficar em skills ou regras com escopo.
 
-## Why
+## Por que existe
 
-AI coding agents work better with concise, relevant context. Large `AGENTS.md`, `CLAUDE.md`, rules, and skill files often become dumping grounds for every convention, workflow, warning, and reminder.
+Agentes de código funcionam melhor com contexto curto, claro e relevante. Arquivos como `AGENTS.md`, `CLAUDE.md`, regras e skills podem virar depósito de convenções, workflows, avisos e preferências antigas.
 
-That creates two problems:
+Isso cria dois problemas:
 
-- tokens are spent before the real task starts;
-- important instructions compete with stale, vague, or duplicated guidance.
+- tokens são gastos antes da tarefa real começar;
+- instruções importantes competem com regras vagas, duplicadas ou desatualizadas.
 
-Dietoken helps you see that cost and clean it up.
+Dietoken mostra esse custo e ajuda a limpar o contexto.
 
-## Install
+## Instalação
 
 ```bash
 npm install -g dietoken
 ```
 
-Or run without installing:
+Ou rode sem instalar:
 
 ```bash
 npx dietoken scan
 ```
 
-## Usage
+## Uso rápido
 
-Analyze the current project:
+Analisar o projeto atual:
 
 ```bash
 dietoken scan
 ```
 
-Print JSON:
+Imprimir JSON:
 
 ```bash
 dietoken scan --json
 ```
 
-Generate an optimization plan:
+Gerar um plano de otimização:
 
 ```bash
 dietoken plan
 ```
 
-Analyze another directory:
+Analisar outra pasta:
 
 ```bash
-dietoken scan --cwd ../my-project
+dietoken scan --cwd ../meu-projeto
 ```
 
-Include user-level files from `~/.codex` and `~/.claude`:
+Incluir arquivos globais de `~/.codex` e `~/.claude`:
 
 ```bash
 dietoken scan --include-user
 ```
 
-## What Dietoken Scans
+## O que o Dietoken analisa
 
 Codex:
 
@@ -68,7 +68,7 @@ Codex:
 - `.agents/skills/**/SKILL.md`
 - `.codex/hooks.json`
 - `.codex/config.toml`
-- optional user-level `~/.codex/*`
+- arquivos opcionais em `~/.codex/*`
 
 Claude Code:
 
@@ -78,20 +78,20 @@ Claude Code:
 - `.claude/rules/**/*.md`
 - `.claude/skills/**/SKILL.md`
 - `.claude/settings.json`
-- optional user-level `~/.claude/*`
+- arquivos opcionais em `~/.claude/*`
 
-## Findings
+## Alertas
 
-Dietoken reports:
+Dietoken reporta:
 
-- large always-on instruction files;
-- vague rules like "use best practices" or "write clean code";
-- long workflows that should become skills;
-- path-specific guidance that should move closer to matching files;
-- prose rules that should become hooks or permission policies;
-- duplicated guidance across files.
+- arquivos always-on grandes;
+- regras vagas como "use best practices" ou "código limpo";
+- workflows longos que deveriam virar skills;
+- instruções específicas de path que deveriam ficar perto dos arquivos certos;
+- regras em texto que deveriam virar hooks ou políticas de permissão;
+- instruções duplicadas entre arquivos.
 
-## Example
+## Exemplo
 
 ```txt
 Dietoken scan
@@ -110,9 +110,9 @@ Findings
   Suggestion: Move repeatable procedures to a skill so they load only when needed.
 ```
 
-## Config
+## Configuração
 
-Create `.dietokenrc.json`:
+Crie `.dietokenrc.json`:
 
 ```json
 {
@@ -123,18 +123,29 @@ Create `.dietokenrc.json`:
 }
 ```
 
+## Desenvolvimento
+
+```bash
+npm install
+npm test
+```
+
+## Tags
+
+`ai-agents` `cli` `claude-code` `codex` `context-engineering` `developer-tools` `llm` `prompt-engineering` `token-optimization` `tokens` `typescript`
+
 ## Roadmap
 
-- `apply --dry-run` for generated optimized files.
-- Codex and Claude hook installers.
-- Support for Cursor, Gemini CLI, and Aider.
-- HTML reports.
-- Optional model-specific tokenizers.
+- `apply --dry-run` para arquivos otimizados gerados.
+- Instalador de hooks para Codex e Claude.
+- Suporte a Cursor, Gemini CLI e Aider.
+- Relatório HTML.
+- Tokenizers específicos por modelo, opcionais.
 
 ## Design
 
-See [docs/SDD.pt-BR.md](docs/SDD.pt-BR.md).
+Veja [docs/SDD.pt-BR.md](docs/SDD.pt-BR.md).
 
-## License
+## Licença
 
 MIT

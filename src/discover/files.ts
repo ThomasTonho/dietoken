@@ -12,6 +12,8 @@ type FileSpec = {
   alwaysOn: boolean;
 };
 
+type IgnoreMatcher = (path: string) => boolean;
+
 export function readContextFile(spec: FileSpec, cwd: string): ContextFile | undefined {
   if (!existsSync(spec.path) || !statSync(spec.path).isFile()) {
     return undefined;
@@ -26,40 +28,42 @@ export function readContextFile(spec: FileSpec, cwd: string): ContextFile | unde
   };
 }
 
-export function discoverFiles(cwd: string, includeUserFiles: boolean): ContextFile[] {
+export function discoverFiles(cwd: string, includeUserFiles: boolean, ignore: string[] = []): ContextFile[] {
+  const isIgnored = createIgnoreMatcher(cwd, ignore);
   const specs: FileSpec[] = [
-    ...codexProjectSpecs(cwd),
-    ...claudeProjectSpecs(cwd)
+    ...codexProjectSpecs(cwd, isIgnored),
+    ...claudeProjectSpecs(cwd, isIgnored)
   ];
 
   if (includeUserFiles) {
-    specs.push(...codexUserSpecs(), ...claudeUserSpecs());
+    specs.push(...codexUserSpecs(), ...claudeUserSpecs(isIgnored));
   }
 
   return specs
+    .filter((spec) => !isIgnored(spec.path))
     .map((spec) => readContextFile(spec, cwd))
     .filter((file): file is ContextFile => Boolean(file));
 }
 
-function codexProjectSpecs(cwd: string): FileSpec[] {
+function codexProjectSpecs(cwd: string, isIgnored: IgnoreMatcher): FileSpec[] {
   return [
     instruction("codex", join(cwd, "AGENTS.md"), "project"),
     instruction("codex", join(cwd, "AGENTS.override.md"), "project"),
     config("codex", join(cwd, ".codex", "config.toml"), "project"),
     hook("codex", join(cwd, ".codex", "hooks.json"), "project"),
-    ...recursiveSpecs("codex", join(cwd, ".agents", "skills"), "SKILL.md", "project", "skill", false)
+    ...recursiveSpecs("codex", join(cwd, ".agents", "skills"), "SKILL.md", "project", "skill", false, isIgnored)
   ];
 }
 
-function claudeProjectSpecs(cwd: string): FileSpec[] {
+function claudeProjectSpecs(cwd: string, isIgnored: IgnoreMatcher): FileSpec[] {
   return [
     instruction("claude", join(cwd, "CLAUDE.md"), "project"),
     instruction("claude", join(cwd, "CLAUDE.local.md"), "project"),
     instruction("claude", join(cwd, ".claude", "CLAUDE.md"), "project"),
     config("claude", join(cwd, ".claude", "settings.json"), "project"),
     config("claude", join(cwd, ".claude", "settings.local.json"), "project"),
-    ...recursiveSpecs("claude", join(cwd, ".claude", "rules"), ".md", "project", "rule", false),
-    ...recursiveSpecs("claude", join(cwd, ".claude", "skills"), "SKILL.md", "project", "skill", false)
+    ...recursiveSpecs("claude", join(cwd, ".claude", "rules"), ".md", "project", "rule", false, isIgnored),
+    ...recursiveSpecs("claude", join(cwd, ".claude", "skills"), "SKILL.md", "project", "skill", false, isIgnored)
   ];
 }
 
@@ -73,12 +77,12 @@ function codexUserSpecs(): FileSpec[] {
   ];
 }
 
-function claudeUserSpecs(): FileSpec[] {
+function claudeUserSpecs(isIgnored: IgnoreMatcher): FileSpec[] {
   const root = join(homedir(), ".claude");
   return [
     instruction("claude", join(root, "CLAUDE.md"), "user"),
     config("claude", join(root, "settings.json"), "user"),
-    ...recursiveSpecs("claude", join(root, "rules"), ".md", "user", "rule", false)
+    ...recursiveSpecs("claude", join(root, "rules"), ".md", "user", "rule", false, isIgnored)
   ];
 }
 
@@ -100,9 +104,10 @@ function recursiveSpecs(
   suffix: string,
   scope: ContextScope,
   kind: ContextKind,
-  alwaysOn: boolean
+  alwaysOn: boolean,
+  isIgnored: IgnoreMatcher
 ): FileSpec[] {
-  if (!existsSync(root) || !statSync(root).isDirectory()) {
+  if (isIgnored(root) || !existsSync(root) || !statSync(root).isDirectory()) {
     return [];
   }
 
@@ -111,12 +116,50 @@ function recursiveSpecs(
 
   for (const entry of entries) {
     const path = join(root, entry.name);
+    if (isIgnored(path)) {
+      continue;
+    }
+
     if (entry.isDirectory()) {
-      specs.push(...recursiveSpecs(agent, path, suffix, scope, kind, alwaysOn));
+      specs.push(...recursiveSpecs(agent, path, suffix, scope, kind, alwaysOn, isIgnored));
     } else if (entry.isFile() && entry.name.endsWith(suffix)) {
       specs.push({ agent, path, scope, kind, alwaysOn });
     }
   }
 
   return specs;
+}
+
+function createIgnoreMatcher(cwd: string, patterns: string[]): IgnoreMatcher {
+  const normalizedPatterns = patterns.map(normalizePath).filter(Boolean);
+
+  return (path: string) => {
+    const relativePath = normalizePath(relative(cwd, path));
+    const normalizedPath = normalizePath(path);
+    return normalizedPatterns.some(
+      (pattern) => matchesIgnorePattern(relativePath, pattern) || matchesIgnorePattern(normalizedPath, pattern)
+    );
+  };
+}
+
+function matchesIgnorePattern(path: string, pattern: string): boolean {
+  if (pattern.endsWith("/**")) {
+    const base = pattern.slice(0, -3);
+    return path === base || path.startsWith(`${base}/`);
+  }
+
+  const regex = new RegExp(`^${globToRegExp(pattern)}$`);
+  return regex.test(path);
+}
+
+function globToRegExp(pattern: string): string {
+  return pattern
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*\*/g, "\0")
+    .replace(/\*/g, "[^/]*")
+    .replace(/\0/g, ".*");
+}
+
+function normalizePath(path: string): string {
+  return path.replace(/\\/g, "/").replace(/\/+$/g, "");
 }

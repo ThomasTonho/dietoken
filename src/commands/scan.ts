@@ -3,7 +3,7 @@ import { analyzeFiles } from "../analyze/classify.js";
 import type { DietokenConfig, ScanOptions, ScanSummary } from "../types.js";
 
 export function scanProject(options: ScanOptions, config: DietokenConfig): ScanSummary {
-  const files = discoverFiles(options.cwd, options.includeUserFiles || config.includeUserFiles);
+  const files = discoverFiles(options.cwd, options.includeUserFiles || config.includeUserFiles, config.ignore);
   const findings = analyzeFiles(files, config);
   const totalTokens = files.reduce((sum, file) => sum + file.tokenEstimate, 0);
   const alwaysOnTokens = files
