@@ -63,14 +63,23 @@ function main(): void {
 
 function parseArgs(argv: string[]): ParsedArgs {
   const [first, ...rest] = argv;
-  const command = first && !first.startsWith("-") ? first : "scan";
-  const flags = first && first.startsWith("-") ? argv : rest;
 
-  if (command === "--help" || command === "-h" || command === "help") {
+  if (first === "--help" || first === "-h") {
     return base("help");
   }
 
-  if (command === "--version" || command === "-v" || command === "version") {
+  if (first === "--version" || first === "-v") {
+    return base("version");
+  }
+
+  const command = first && !first.startsWith("-") ? first : "scan";
+  const flags = first && first.startsWith("-") ? argv : rest;
+
+  if (command === "help") {
+    return base("help");
+  }
+
+  if (command === "version") {
     return base("version");
   }
 
