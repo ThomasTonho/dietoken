@@ -1,76 +1,86 @@
 # Dietoken
 
-Audite contexto de agentes de IA e corte desperdício de tokens.
+Audit AI agent context and cut wasted tokens.
 
-Dietoken é uma CLI para projetos que usam agentes de código como Codex e Claude Code. Ela analisa arquivos de instrução, skills, regras, hooks e configurações para encontrar contexto sempre ligado grande demais, instruções duplicadas, regras vagas e workflows que deveriam ficar em skills ou regras com escopo.
+[![CI](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml/badge.svg)](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-green.svg)](https://nodejs.org)
 
-## Por que existe
+Dietoken is a CLI for projects using code agents like Codex and Claude Code. It analyzes instruction files, skills, rules, hooks, and configs to find always-on context that's too large, duplicate instructions, vague rules, and workflows that should live in skills or scoped rules.
 
-Agentes de código funcionam melhor com contexto curto, claro e relevante. Arquivos como `AGENTS.md`, `CLAUDE.md`, regras e skills podem virar depósito de convenções, workflows, avisos e preferências antigas.
+## Why it exists
 
-Isso cria dois problemas:
+Code agents work best with short, clear, and relevant context. Files like `AGENTS.md`, `CLAUDE.md`, rules, and skills tend to become a dumping ground for conventions, workflows, warnings, and outdated preferences.
 
-- tokens são gastos antes da tarefa real começar;
-- instruções importantes competem com regras vagas, duplicadas ou desatualizadas.
+This creates two problems:
 
-Dietoken mostra esse custo e ajuda a limpar o contexto.
+- tokens are spent before the real task even starts;
+- important instructions compete with vague, duplicated, or stale rules.
 
-## Instalação
+Dietoken surfaces that cost and helps you clean up.
 
-```bash
+## Install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ThomasTonho/dietoken/main/install.sh | sh
+```
+
+Or with npm:
+
+```sh
 npm install -g dietoken
 ```
 
-Ou rode sem instalar:
+Or run without installing:
 
-```bash
+```sh
 npx dietoken scan
 ```
 
-## Uso rápido
+## Quick start
 
-Analisar o projeto atual:
+Analyze the current project:
 
-```bash
+```sh
 dietoken scan
 ```
 
-Imprimir JSON:
+Print JSON:
 
-```bash
+```sh
 dietoken scan --json
 ```
 
-Gerar um plano de otimização:
+Generate an optimization plan:
 
-```bash
+```sh
 dietoken plan
 ```
 
-Analisar outra pasta:
+Analyze another directory:
 
-```bash
-dietoken scan --cwd ../meu-projeto
+```sh
+dietoken scan --cwd ../my-project
 ```
 
-Incluir arquivos globais de `~/.codex` e `~/.claude`:
+Include global files from `~/.codex` and `~/.claude`:
 
-```bash
+```sh
 dietoken scan --include-user
 ```
 
-## O que o Dietoken analisa
+## What Dietoken analyzes
 
-Codex:
+**Codex:**
 
 - `AGENTS.md`
 - `AGENTS.override.md`
 - `.agents/skills/**/SKILL.md`
 - `.codex/hooks.json`
 - `.codex/config.toml`
-- arquivos opcionais em `~/.codex/*`
+- optional files in `~/.codex/*`
 
-Claude Code:
+**Claude Code:**
 
 - `CLAUDE.md`
 - `CLAUDE.local.md`
@@ -78,23 +88,23 @@ Claude Code:
 - `.claude/rules/**/*.md`
 - `.claude/skills/**/SKILL.md`
 - `.claude/settings.json`
-- arquivos opcionais em `~/.claude/*`
+- optional files in `~/.claude/*`
 
-## Alertas
+## Findings
 
-Dietoken reporta:
+Dietoken reports:
 
-- arquivos always-on grandes;
-- regras vagas como "use best practices" ou "código limpo";
-- workflows longos que deveriam virar skills;
-- instruções específicas de path que deveriam ficar perto dos arquivos certos;
-- regras em texto que deveriam virar hooks ou políticas de permissão;
-- instruções duplicadas entre arquivos.
+- large always-on files;
+- vague rules like "use best practices" or "write clean code";
+- long workflows that should become skills;
+- path-specific instructions that should live closer to the right files;
+- prose rules that should be hooks or permission policies;
+- duplicate instructions across files.
 
-## Exemplo
+## Example
 
 ```txt
-Dietoken scan
+dietoken scan
 
 Files analyzed: 2
 Total context estimate: 4210 tokens
@@ -110,9 +120,9 @@ Findings
   Suggestion: Move repeatable procedures to a skill so they load only when needed.
 ```
 
-## Configuração
+## Config
 
-Crie `.dietokenrc.json`:
+Create `.dietokenrc.json`:
 
 ```json
 {
@@ -123,29 +133,25 @@ Crie `.dietokenrc.json`:
 }
 ```
 
-## Desenvolvimento
+## Development
 
-```bash
+```sh
 npm install
 npm test
 ```
 
-## Tags
-
-`ai-agents` `cli` `claude-code` `codex` `context-engineering` `developer-tools` `llm` `prompt-engineering` `token-optimization` `tokens` `typescript`
-
 ## Roadmap
 
-- `apply --dry-run` para arquivos otimizados gerados.
-- Instalador de hooks para Codex e Claude.
-- Suporte a Cursor, Gemini CLI e Aider.
-- Relatório HTML.
-- Tokenizers específicos por modelo, opcionais.
+- `apply --dry-run` to generate optimized files.
+- Hook installer for Codex and Claude.
+- Support for Cursor, Gemini CLI, and Aider.
+- HTML report.
+- Optional per-model tokenizers.
 
 ## Design
 
-Veja [docs/SDD.pt-BR.md](docs/SDD.pt-BR.md).
+See [docs/SDD.pt-BR.md](docs/SDD.pt-BR.md).
 
-## Licença
+## License
 
 MIT
