@@ -45,9 +45,13 @@ dietoken scan --include-user     # Include ~/.claude and ~/.codex global files
 dietoken scan --json             # Machine-readable output
 dietoken scan --cwd ../project   # Analyze another directory
 dietoken plan                    # Generate a step-by-step optimization plan
+dietoken apply                   # Auto-fix: remove vague rules, extract workflows to skills
+dietoken apply --dry-run         # Preview changes without writing files
 ```
 
 ## Real benchmarks
+
+### scan — waste identified
 
 Tested on 3 real Claude Code projects:
 
@@ -58,7 +62,15 @@ Tested on 3 real Claude Code projects:
 | omnilogica | 1,124 tok | 223 tok | **19.8%** |
 | **Average** | **1,021 tok** | **319 tok** | **31.2%** |
 
-Results vary by project. The more a `CLAUDE.md` has grown organically — accumulating workflows, vague conventions, and one-off instructions — the more waste dietoken finds. Freshly written, intentional context scores close to 0%.
+### apply — waste eliminated
+
+`apply` closes the loop: it removes vague rules in-place and extracts workflow sections to on-demand skills automatically.
+
+| Project | Before | After | Saved | % |
+|---|---|---|---|---|
+| claude-cookbooks | 855 tok | 485 tok | 370 tok | **43.3%** |
+
+Results vary by project. The more a `CLAUDE.md` has grown organically — accumulating workflows, vague conventions, and one-off instructions — the more waste dietoken finds and eliminates. Freshly written, intentional context scores close to 0%.
 
 ## Example output
 
@@ -106,6 +118,33 @@ By Project
   2.  claude-cookbooks            2      855 tok     855 tok         —
   3.  ia omnilogica               1    1,085 tok   1,085 tok         —
 ────────────────────────────────────────────────────────────────────
+```
+
+## Example output
+
+```
+$ dietoken apply --dry-run --cwd claude-cookbooks
+
+Dietoken apply --dry-run
+
+  Would apply 10 fixes across 2 files
+  Saved ~237 tokens
+
+Changes
+  CLAUDE.md
+    ✓ extract "Key Rules" → .claude/skills/key-rules/SKILL.md  -25 tok
+    ✓ extract "Adding a New Cookbook" → .claude/skills/adding-a-new-cookbook/SKILL.md  -10 tok
+  .claude/skills/cookbook-audit/SKILL.md
+    ✓ remove vague rule: "Always read style_guide.md first"  -33 tok
+    ✓ remove vague rule: "Follows language best practices"  -8 tok
+    ✓ remove vague rule: "What Makes a Good Cookbook"  -6 tok
+    ...
+
+Skipped (need manual attention)
+  - hook-candidate .claude/skills/cookbook-audit/SKILL.md:71
+    Use a hook or permission policy for enforcement instead of relying only on prose.
+
+Run without --dry-run to apply changes.
 ```
 
 ## What it analyzes
