@@ -120,7 +120,7 @@ By Project
 ────────────────────────────────────────────────────────────────────
 ```
 
-## Example output
+## Example output: apply
 
 ```
 $ dietoken apply --dry-run --cwd claude-cookbooks
@@ -188,7 +188,6 @@ npm test
 
 ## Roadmap
 
-- [ ] `apply --dry-run` — generate optimized files without touching originals
 - [ ] Hook installer for Codex and Claude Code
 - [ ] Support for Cursor, Gemini CLI, and Aider
 - [ ] HTML report

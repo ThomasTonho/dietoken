@@ -2,8 +2,7 @@
 set -e
 
 REPO="ThomasTonho/dietoken"
-BRANCH="main"
-BUNDLE_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/dist/dietoken.cjs"
+BUNDLE_URL="https://github.com/${REPO}/releases/latest/download/dietoken.cjs"
 INSTALL_DIR="${DIETOKEN_INSTALL_DIR:-/usr/local/bin}"
 
 if ! command -v node >/dev/null 2>&1; then
