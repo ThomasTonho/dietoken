@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { estimateTokens } from "../analyze/tokenize.js";
 import type { AgentKind, ContextFile, ContextKind, ContextScope } from "../types.js";
 
@@ -14,12 +14,26 @@ type FileSpec = {
 
 type IgnoreMatcher = (path: string) => boolean;
 
+function resolveIncludes(content: string, filePath: string, depth: number): string {
+  if (depth <= 0) return content;
+
+  return content.replace(/^@(.+\.md)\s*$/gm, (_match, includeName: string) => {
+    const includePath = join(dirname(filePath), includeName.trim());
+    if (!existsSync(includePath) || !statSync(includePath).isFile()) {
+      return _match;
+    }
+    const includeContent = readFileSync(includePath, "utf8");
+    return resolveIncludes(includeContent, includePath, depth - 1);
+  });
+}
+
 export function readContextFile(spec: FileSpec, cwd: string): ContextFile | undefined {
   if (!existsSync(spec.path) || !statSync(spec.path).isFile()) {
     return undefined;
   }
 
-  const content = readFileSync(spec.path, "utf8");
+  const raw = readFileSync(spec.path, "utf8");
+  const content = resolveIncludes(raw, spec.path, 3);
   return {
     ...spec,
     relativePath: spec.scope === "project" ? relative(cwd, spec.path) || "." : spec.path,
