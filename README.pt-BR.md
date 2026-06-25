@@ -2,6 +2,10 @@
 
 Audite contexto de agentes de IA e corte desperdício de tokens.
 
+[![CI](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml/badge.svg)](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-green.svg)](https://nodejs.org)
+
 Dietoken é uma CLI para projetos que usam agentes de código como Codex e Claude Code. Ela analisa arquivos de instrução, skills, regras, hooks e configurações para encontrar contexto sempre ligado grande demais, instruções duplicadas, regras vagas e workflows que deveriam ficar em skills ou regras com escopo.
 
 ## Por que existe
@@ -17,13 +21,19 @@ Dietoken mostra esse custo e ajuda a limpar o contexto.
 
 ## Instalação
 
-```bash
+```sh
+curl -fsSL https://raw.githubusercontent.com/ThomasTonho/dietoken/main/install.sh | sh
+```
+
+Ou com npm:
+
+```sh
 npm install -g dietoken
 ```
 
 Ou rode sem instalar:
 
-```bash
+```sh
 npx dietoken scan
 ```
 
@@ -31,37 +41,37 @@ npx dietoken scan
 
 Analisar o projeto atual:
 
-```bash
+```sh
 dietoken scan
 ```
 
 Imprimir JSON:
 
-```bash
+```sh
 dietoken scan --json
 ```
 
 Gerar um plano de otimização:
 
-```bash
+```sh
 dietoken plan
 ```
 
 Analisar outra pasta:
 
-```bash
+```sh
 dietoken scan --cwd ../meu-projeto
 ```
 
 Incluir arquivos globais de `~/.codex` e `~/.claude`:
 
-```bash
+```sh
 dietoken scan --include-user
 ```
 
 ## O que o Dietoken analisa
 
-Codex:
+**Codex:**
 
 - `AGENTS.md`
 - `AGENTS.override.md`
@@ -70,7 +80,7 @@ Codex:
 - `.codex/config.toml`
 - arquivos opcionais em `~/.codex/*`
 
-Claude Code:
+**Claude Code:**
 
 - `CLAUDE.md`
 - `CLAUDE.local.md`
@@ -94,7 +104,7 @@ Dietoken reporta:
 ## Exemplo
 
 ```txt
-Dietoken scan
+dietoken scan
 
 Files analyzed: 2
 Total context estimate: 4210 tokens
@@ -125,14 +135,10 @@ Crie `.dietokenrc.json`:
 
 ## Desenvolvimento
 
-```bash
+```sh
 npm install
 npm test
 ```
-
-## Tags
-
-`ai-agents` `cli` `claude-code` `codex` `context-engineering` `developer-tools` `llm` `prompt-engineering` `token-optimization` `tokens` `typescript`
 
 ## Roadmap
 
