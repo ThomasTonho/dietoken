@@ -39,39 +39,73 @@ npx dietoken scan
 ## Usage
 
 ```sh
-dietoken scan                    # Analyze the current project
+dietoken gain                    # Token waste report + savings history
+dietoken scan                    # Detailed findings per file and line
 dietoken scan --include-user     # Include ~/.claude and ~/.codex global files
 dietoken scan --json             # Machine-readable output
 dietoken scan --cwd ../project   # Analyze another directory
 dietoken plan                    # Generate a step-by-step optimization plan
 ```
 
+## Real benchmarks
+
+Tested on 3 real Claude Code projects:
+
+| Project | Always-on tokens | Waste identified | % |
+|---|---|---|---|
+| claude-cookbooks | 855 tok | 350 tok | **40.9%** |
+| ia-omnilogica | 1,085 tok | 384 tok | **35.4%** |
+| omnilogica | 1,124 tok | 223 tok | **19.8%** |
+| **Average** | **1,021 tok** | **319 tok** | **31.2%** |
+
+Results vary by project. The more a `CLAUDE.md` has grown organically — accumulating workflows, vague conventions, and one-off instructions — the more waste dietoken finds. Freshly written, intentional context scores close to 0%.
+
 ## Example output
 
 ```
-$ dietoken scan
+$ dietoken scan --cwd claude-cookbooks
 
-  Files analyzed    6
-  Always-on tokens  3,820
-  Wasted tokens     1,340  ▓▓▓▓▓▓░░░░░░░░░░░░░  35%
+Dietoken scan
 
-  Findings
+Files analyzed: 2
+Total context estimate: 3,544 tokens
+Always-on estimate: 855 tokens
+Estimated waste: 350 tokens
 
-  ● large-always-on-file  CLAUDE.md
-    2,880 tokens loaded on every session.
-    → Move long workflows to skills. Keep only session-critical rules here.
+Context files
+- CLAUDE.md                              855 tokens  claude / always-on
+- .claude/skills/cookbook-audit/SKILL.md 2,689 tokens  claude / on-demand
 
-  ● workflow-in-always-on  AGENTS.md:42
-    Repeatable procedure found in always-on context.
-    → Convert to a skill so it loads only when invoked.
+Findings
+- warning vague-rule .claude/skills/cookbook-audit/SKILL.md:18
+  Instruction is vague and hard for agents to verify.
+  Suggestion: Replace vague quality words with observable rules, commands, or examples.
+- warning workflow-in-always-on CLAUDE.md:60
+  Workflow-like instruction appears in always-on context.
+  Suggestion: Move repeatable procedures to a skill so they load only when needed.
+- info hook-candidate .claude/skills/cookbook-audit/SKILL.md:71
+  Instruction tries to prevent a mechanical action.
+  Suggestion: Use a hook or permission policy for enforcement instead of relying only on prose.
+```
 
-  ● vague-rule  CLAUDE.md:17
-    "Write clean code and follow best practices."
-    → Remove or replace with a concrete, enforceable rule.
+```
+$ dietoken gain
 
-  ● duplicate-instruction  CLAUDE.md ↔ .claude/rules/style.md
-    Same instruction appears in two places.
-    → Keep one authoritative source.
+Dietoken — Savings Report
+════════════════════════════════════════════════════════════════════
+
+  Total scans        6
+  Projects tracked   3
+  Waste identified   1,753 tokens (cumulative across all scans)
+
+By Project
+────────────────────────────────────────────────────────────────────
+  #  Project                  Scans   First scan         Now      Saved
+────────────────────────────────────────────────────────────────────
+  1.  omnilogica                  3    1,124 tok   1,124 tok         —
+  2.  claude-cookbooks            2      855 tok     855 tok         —
+  3.  ia omnilogica               1    1,085 tok   1,085 tok         —
+────────────────────────────────────────────────────────────────────
 ```
 
 ## What it analyzes
