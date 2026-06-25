@@ -4,9 +4,10 @@ import { loadConfig } from "./config.js";
 import { scanProject } from "./commands/scan.js";
 import { writePlan } from "./commands/plan.js";
 import { formatScan } from "./report/console.js";
+import { formatGain } from "./report/gain.js";
 
 type ParsedArgs = {
-  command: "scan" | "plan" | "help" | "version";
+  command: "scan" | "plan" | "gain" | "help" | "version";
   cwd: string;
   json: boolean;
   includeUserFiles: boolean;
@@ -38,6 +39,15 @@ function main(): void {
       },
       config
     );
+
+    if (args.command === "gain") {
+      if (args.json) {
+        process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
+      } else {
+        process.stdout.write(formatGain(summary));
+      }
+      return;
+    }
 
     if (args.command === "scan") {
       if (args.json) {
@@ -83,7 +93,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     return base("version");
   }
 
-  if (command !== "scan" && command !== "plan") {
+  if (command !== "scan" && command !== "plan" && command !== "gain") {
     throw new Error(`unknown command "${command}"`);
   }
 
@@ -132,11 +142,13 @@ function helpText(): string {
 Kill wasted tokens. Keep better context.
 
 Usage:
+  dietoken gain [--json] [--include-user] [--cwd <path>]
   dietoken scan [--json] [--include-user] [--cwd <path>]
   dietoken plan [--json] [--include-user] [--cwd <path>]
 
 Commands:
-  scan     Analyze Codex and Claude Code context files
+  gain     Show token waste analytics and savings summary
+  scan     Analyze Codex and Claude Code context files in detail
   plan     Write .dietoken/plan.md with optimization suggestions
 
 Options:
