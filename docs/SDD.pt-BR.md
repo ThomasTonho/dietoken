@@ -1,53 +1,53 @@
 # Dietoken SDD
 
-## Visao
+## Visão
 
-Dietoken e uma CLI para reduzir contexto sempre carregado em agentes de codigo, com foco inicial em Codex e Claude Code.
+Dietoken é uma CLI para reduzir contexto sempre carregado em agentes de código, com foco inicial em Codex e Claude Code.
 
-O produto nao tenta "comprimir tudo". Ele diagnostica onde tokens sao gastos antes da tarefa comecar: arquivos de instrucao, regras, skills, hooks e configuracoes que entram no contexto de forma recorrente.
+O produto não tenta "comprimir tudo". Ele diagnostica onde tokens são gastos antes da tarefa começar: arquivos de instrução, regras, skills, hooks e configurações que entram no contexto de forma recorrente.
 
 ## Problema
 
-Agentes como Codex e Claude Code funcionam melhor quando recebem contexto claro, curto e acionavel. Na pratica, muitos projetos acumulam instrucoes longas em `AGENTS.md`, `CLAUDE.md`, `.claude/rules`, skills e arquivos relacionados.
+Agentes como Codex e Claude Code funcionam melhor quando recebem contexto claro, curto e acionável. Na prática, muitos projetos acumulam instruções longas em `AGENTS.md`, `CLAUDE.md`, `.claude/rules`, skills e arquivos relacionados.
 
-Esse contexto fica sempre ligado ou facil de carregar, mesmo quando a tarefa nao precisa dele. Resultado:
+Esse contexto fica sempre ligado ou fácil de carregar, mesmo quando a tarefa não precisa dele. Resultado:
 
-- mais tokens gastos no inicio da sessao;
-- mais ruido antes da tarefa real;
-- regras duplicadas ou contraditorias;
+- mais tokens gastos no início da sessão;
+- mais ruído antes da tarefa real;
+- regras duplicadas ou contraditórias;
 - workflows longos guardados no lugar errado;
-- menor aderencia a instrucoes importantes.
+- menor aderência a instruções importantes.
 
 ## Objetivos
 
 - Medir o custo aproximado de contexto de Codex e Claude Code.
-- Encontrar arquivos e blocos que provavelmente desperdicam tokens.
-- Sugerir onde cada instrucao deve viver: always-on, skill, regra por path, hook ou remocao.
-- Gerar um plano de otimizacao sem alterar arquivos por padrao.
-- Manter a ferramenta local-first, sem API key e sem enviar conteudo para terceiros.
+- Encontrar arquivos e blocos que provavelmente desperdiçam tokens.
+- Sugerir onde cada instrução deve viver: always-on, skill, regra por path, hook ou remoção.
+- Gerar um plano de otimização sem alterar arquivos por padrão.
+- Manter a ferramenta local-first, sem API key e sem enviar conteúdo para terceiros.
 
-## Nao objetivos
+## Não objetivos
 
-- Nao chamar LLM para resumir arquivos na versao inicial.
-- Nao editar arquivos automaticamente sem `--apply`.
-- Nao substituir Codex, Claude Code, RTK, Repomix ou linters de codigo.
-- Nao fazer analise semantica perfeita. A primeira versao usa heuristicas transparentes.
+- Não chamar LLM para resumir arquivos na versão inicial.
+- Não editar arquivos automaticamente sem `--apply`.
+- Não substituir Codex, Claude Code, RTK, Repomix ou linters de código.
+- Não fazer análise semântica perfeita. A primeira versão usa heurísticas transparentes.
 
-## Usuarios
+## Usuários
 
 - Devs que usam Codex ou Claude Code diariamente.
-- Times que mantem `AGENTS.md`, `CLAUDE.md`, skills ou rules.
+- Times que mantêm `AGENTS.md`, `CLAUDE.md`, skills ou rules.
 - Criadores de repos que querem configurar agentes sem inflar contexto.
 
-## Principios
+## Princípios
 
 1. Local-first: nenhuma rede para analisar o projeto.
-2. Seguro por padrao: `scan` e `plan` nunca alteram arquivos.
-3. Explicavel: cada alerta mostra arquivo, linha e motivo.
+2. Seguro por padrão: `scan` e `plan` nunca alteram arquivos.
+3. Explicável: cada alerta mostra arquivo, linha e motivo.
 4. Multi-agent: Codex e Claude Code primeiro, outros agentes depois.
-5. Pouca magia: heuristicas simples, configuraveis e testaveis.
+5. Pouca magia: heurísticas simples, configuráveis e testáveis.
 
-## Superficies analisadas
+## Superfícies analisadas
 
 ### Codex
 
@@ -75,17 +75,52 @@ Esse contexto fica sempre ligado ou facil de carregar, mesmo quando a tarefa nao
 
 ## Comandos
 
+### `dietoken gain`
+
+Mostra um relatório consolidado de desperdício de tokens: medidor visual, breakdown por tipo de finding e ranking dos arquivos always-on mais pesados.
+
+```bash
+dietoken gain
+```
+
+Saída esperada:
+
+```txt
+Dietoken — Token Waste Report
+════════════════════════════════════════════════════════════
+
+  Files analyzed    4
+  Always-on tokens  5,200
+  Wasted tokens     1,800 (34.6%)
+  Waste meter       ████████░░░░░░░░░░░░░░░░  34.6%
+
+By Finding
+────────────────────────────────────────────────────────────
+  #  Finding                              Count   Wasted   Share
+────────────────────────────────────────────────────────────
+  1.  workflow-in-always-on                   2    1,100   61.1%
+  2.  vague-rule                              3      700   38.9%
+────────────────────────────────────────────────────────────
+
+Top always-on files
+────────────────────────────────────────────────────────────
+  1.  CLAUDE.md                        2,880 tokens  ██████░░░░░░
+  2.  AGENTS.md                        1,240 tokens  ███░░░░░░░░░
+────────────────────────────────────────────────────────────
+
+  Run "dietoken scan" for per-finding details.
+  Run "dietoken plan" for a step-by-step optimization plan.
+```
+
 ### `dietoken scan`
 
-Le arquivos conhecidos, estima tokens e mostra diagnostico.
-
-Exemplo:
+Lê arquivos conhecidos, estima tokens e mostra diagnóstico detalhado por arquivo e finding.
 
 ```bash
 dietoken scan
 ```
 
-Saida esperada:
+Saída esperada:
 
 ```txt
 Dietoken scan
@@ -103,13 +138,13 @@ Estimated waste: 1,100 tokens
 
 ### `dietoken plan`
 
-Gera plano em Markdown com sugestoes de reorganizacao.
+Gera plano em Markdown com sugestões de reorganização.
 
 ```bash
 dietoken plan
 ```
 
-Saida:
+Saída:
 
 ```txt
 Wrote .dietoken/plan.md
@@ -117,34 +152,34 @@ Wrote .dietoken/plan.md
 
 ### `dietoken apply`
 
-Futuro. Aplica mudancas propostas com backup e diff. Fora do MVP inicial.
+Futuro. Aplica mudanças propostas com backup e diff. Fora do MVP inicial.
 
 ### `dietoken hooks install`
 
 Futuro. Instala hooks para evitar comandos ruidosos. Fora do MVP inicial.
 
-## Heuristicas v0.1
+## Heurísticas v0.1
 
 ### Token estimate
 
-Estimativa local e deterministica:
+Estimativa local e determinística:
 
-- palavras e pontuacao contam como unidades;
-- resultado aproximado, nao igual ao tokenizer do modelo;
-- objetivo e comparar tamanho relativo e tendencia.
+- palavras e pontuação contam como unidades;
+- resultado aproximado, não igual ao tokenizer do modelo;
+- objetivo é comparar tamanho relativo e tendência.
 
 ### Arquivo grande
 
-Alerta quando arquivo always-on passa de limite configuravel.
+Alerta quando arquivo always-on passa de limite configurável.
 
-Padroes iniciais:
+Padrões iniciais:
 
 - warning: acima de 1.500 tokens;
 - error: acima de 4.000 tokens.
 
 ### Regra vaga
 
-Alerta quando instrucao usa termos pouco verificaveis:
+Alerta quando instrução usa termos pouco verificáveis:
 
 - "best practices"
 - "clean code"
@@ -153,8 +188,8 @@ Alerta quando instrucao usa termos pouco verificaveis:
 - "simple"
 - "good"
 - "adequate"
-- "melhor pratica"
-- "codigo limpo"
+- "melhor prática"
+- "código limpo"
 - "adequado"
 - "bem feito"
 
@@ -167,16 +202,16 @@ Alerta quando bloco tem muitos passos ou palavras de processo:
 - "deploy"
 - "release"
 - "migration"
-- "migracao"
+- "migração"
 - "procedure"
 - "procedimento"
 - listas numeradas longas
 
-Sugestao: mover para skill.
+Sugestão: mover para skill.
 
 ### Regra por path
 
-Alerta quando bloco menciona padroes de arquivo ou diretorio:
+Alerta quando bloco menciona padrões de arquivo ou diretório:
 
 - `src/**`
 - `*.tsx`
@@ -185,28 +220,41 @@ Alerta quando bloco menciona padroes de arquivo ou diretorio:
 - `frontend`
 - `backend`
 
-Sugestao: mover para regra com escopo por path quando o agente suportar.
+Sugestão: mover para regra com escopo por path quando o agente suportar.
 
 ### Hook candidato
 
-Alerta quando instrucao tenta bloquear acao mecanica:
+Alerta quando instrução tenta bloquear ação mecânica:
 
 - "never run"
 - "do not run"
-- "nao rode"
+- "não rode"
 - "nunca rode"
 - "do not read"
-- "nao leia"
+- "não leia"
 - `node_modules`
 - `dist`
 - `coverage`
 - `.next`
 
-Sugestao: mover para hook, porque instrucao nao e enforcement.
+Sugestão: mover para hook, porque instrução não é enforcement.
 
 ### Duplicata simples
 
 Normaliza linhas e detecta frases repetidas entre arquivos.
+
+## Resolução de `@include`
+
+Dietoken resolve automaticamente referências do tipo `@filename.md` em arquivos Markdown. Quando uma linha contém apenas `@algum-arquivo.md`, o conteúdo do arquivo referenciado é carregado e substituído no lugar antes de estimar os tokens.
+
+Comportamento:
+
+- resolução recursiva com profundidade máxima de 3 níveis;
+- o caminho é relativo ao arquivo que contém o `@include`;
+- se o arquivo referenciado não existir, a linha original é mantida sem erro;
+- a estimativa de tokens reflete o conteúdo resolvido, não a linha bruta.
+
+Isso garante que instruções modulares — como `CLAUDE.md` que inclui `@RTK.md` — sejam contadas pelo tamanho real que chegam ao agente, não pelo tamanho nominal do arquivo de entrada.
 
 ## Arquitetura
 
@@ -217,16 +265,13 @@ src/
     scan.ts
     plan.ts
   discover/
-    codex.ts
-    claude.ts
     files.ts
   analyze/
     tokenize.ts
-    markdown.ts
-    findings.ts
     classify.ts
   report/
     console.ts
+    gain.ts
     markdown.ts
   config.ts
   types.ts
@@ -258,7 +303,7 @@ type Finding = {
 };
 ```
 
-## Configuracao
+## Configuração
 
 Arquivo opcional:
 
@@ -271,11 +316,11 @@ Arquivo opcional:
 }
 ```
 
-## Saidas
+## Saídas
 
 ### Texto
 
-Padrao para terminal.
+Padrão para terminal.
 
 ### JSON
 
@@ -291,52 +336,52 @@ Plano gerado por `dietoken plan`.
 
 ## MVP
 
-### v0.1
+### v0.1 ✓
 
 - CLI `dietoken`.
 - `scan`.
-- descoberta de arquivos Codex e Claude no projeto atual.
-- estimativa de tokens.
-- findings: arquivo grande, regra vaga, workflow em always-on, candidato a hook, duplicata simples.
-- saida texto e JSON.
-- testes unitarios.
+- Descoberta de arquivos Codex e Claude no projeto atual.
+- Estimativa de tokens.
+- Findings: arquivo grande, regra vaga, workflow em always-on, candidato a hook, duplicata simples.
+- Saída texto e JSON.
+- Testes unitários.
 
-### v0.2
+### v0.2 ✓
 
 - `plan`.
 - `.dietoken/plan.md`.
-- sugestoes agrupadas por tipo.
-- README em ingles e portugues.
+- Sugestões agrupadas por tipo.
+- README em inglês e português.
 
 ### v0.3
 
 - `apply --dry-run`.
-- geracao de `AGENTS.md`, `CLAUDE.md`, rules e skills em `.dietoken/generated`.
+- Geração de `AGENTS.md`, `CLAUDE.md`, rules e skills em `.dietoken/generated`.
 
 ### v0.4
 
-- hooks para Codex e Claude.
-- protecao contra comandos ruidosos.
+- Hooks para Codex e Claude.
+- Proteção contra comandos ruidosos.
 
-## Criterios de aceite do MVP
+## Critérios de aceite do MVP
 
 - `npm test` passa.
 - `npm run build` passa.
 - `npx dietoken scan` funciona em um projeto com `AGENTS.md` ou `CLAUDE.md`.
-- `dietoken scan --json` retorna JSON valido.
+- `dietoken scan --json` retorna JSON válido.
 - `dietoken plan` escreve `.dietoken/plan.md`.
-- README em portugues e ingles explicam problema, instalacao e uso.
+- README em português e inglês explicam problema, instalação e uso.
 
 ## Riscos
 
-- Token estimate nao sera identico ao modelo real. Mitigacao: comunicar como estimativa.
-- Heuristicas podem gerar falso positivo. Mitigacao: severidade, explicacao e configuracao.
-- Edicao automatica pode ser perigosa. Mitigacao: `apply` fora do MVP inicial e sempre com dry-run.
+- Token estimate não será idêntico ao modelo real. Mitigação: comunicar como estimativa.
+- Heurísticas podem gerar falso positivo. Mitigação: severidade, explicação e configuração.
+- Edição automática pode ser perigosa. Mitigação: `apply` fora do MVP inicial e sempre com dry-run.
 
 ## Roadmap
 
 - Suporte a Cursor, Gemini CLI e Aider.
-- Tokenizer real por modelo quando disponivel localmente.
+- Tokenizer real por modelo quando disponível localmente.
 - Visual report HTML.
-- Integracao opcional com hooks de Codex e Claude.
+- Integração opcional com hooks de Codex e Claude.
 - Regras customizadas por projeto.
