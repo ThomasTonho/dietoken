@@ -1,11 +1,17 @@
 # Dietoken
 
+<p align="center">
+  <img src="dietinho.jpeg" alt="Dietinho" width="180" />
+</p>
+
 **Stop paying for context you never asked for.**
 
 [![CI](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml/badge.svg)](https://github.com/ThomasTonho/dietoken/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/dietoken.svg)](https://www.npmjs.com/package/dietoken)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green.svg)](https://nodejs.org)
+
+[🇧🇷 Versão em Português](docs/README.pt-BR.md) &nbsp;·&nbsp; [📖 Documentation](docs/SDD.md)
 
 Dietoken audits the always-on context loaded by AI code agents — `CLAUDE.md`, `AGENTS.md`, rules, skills, hooks, and configs — and tells you exactly what's bloating your sessions before the first prompt is even sent.
 
@@ -115,9 +121,10 @@ npm test
 - [ ] HTML report
 - [ ] Per-model tokenizers
 
-## Design
+## Documentation
 
-See [docs/SDD.pt-BR.md](docs/SDD.pt-BR.md).
+- [SDD — English](docs/SDD.md)
+- [SDD — Português](docs/SDD.pt-BR.md)
 
 ## License
 
