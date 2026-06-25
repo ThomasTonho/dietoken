@@ -5,6 +5,7 @@ import { scanProject } from "./commands/scan.js";
 import { writePlan } from "./commands/plan.js";
 import { formatScan } from "./report/console.js";
 import { formatGain } from "./report/gain.js";
+import { appendHistory, makeRecord, readHistory } from "./history.js";
 
 type ParsedArgs = {
   command: "scan" | "plan" | "gain" | "help" | "version";
@@ -41,15 +42,17 @@ function main(): void {
     );
 
     if (args.command === "gain") {
+      const history = readHistory();
       if (args.json) {
-        process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
+        process.stdout.write(`${JSON.stringify({ summary, history }, null, 2)}\n`);
       } else {
-        process.stdout.write(formatGain(summary));
+        process.stdout.write(formatGain(summary, history));
       }
       return;
     }
 
     if (args.command === "scan") {
+      appendHistory(makeRecord(args.cwd, summary));
       if (args.json) {
         process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
       } else {
