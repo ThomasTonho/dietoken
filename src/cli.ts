@@ -3,15 +3,18 @@ import { resolve } from "node:path";
 import { loadConfig } from "./config.js";
 import { scanProject } from "./commands/scan.js";
 import { writePlan } from "./commands/plan.js";
+import { applyFixes } from "./commands/apply.js";
 import { formatScan } from "./report/console.js";
 import { formatGain } from "./report/gain.js";
+import { formatApply } from "./report/apply.js";
 import { appendHistory, makeRecord, readHistory } from "./history.js";
 
 type ParsedArgs = {
-  command: "scan" | "plan" | "gain" | "help" | "version";
+  command: "scan" | "plan" | "gain" | "apply" | "help" | "version";
   cwd: string;
   json: boolean;
   includeUserFiles: boolean;
+  dryRun: boolean;
 };
 
 const version = "0.1.0";
@@ -40,6 +43,20 @@ function main(): void {
       },
       config
     );
+
+    if (args.command === "apply") {
+      const applyResult = applyFixes(
+        { cwd: args.cwd, includeUserFiles: args.includeUserFiles },
+        config,
+        args.dryRun
+      );
+      if (args.json) {
+        process.stdout.write(`${JSON.stringify(applyResult, null, 2)}\n`);
+      } else {
+        process.stdout.write(formatApply(applyResult, args.dryRun));
+      }
+      return;
+    }
 
     if (args.command === "gain") {
       const history = readHistory();
@@ -96,13 +113,14 @@ function parseArgs(argv: string[]): ParsedArgs {
     return base("version");
   }
 
-  if (command !== "scan" && command !== "plan" && command !== "gain") {
+  if (command !== "scan" && command !== "plan" && command !== "gain" && command !== "apply") {
     throw new Error(`unknown command "${command}"`);
   }
 
   let cwd = process.cwd();
   let json = false;
   let includeUserFiles = false;
+  let dryRun = false;
 
   for (let index = 0; index < flags.length; index += 1) {
     const flag = flags[index];
@@ -110,6 +128,8 @@ function parseArgs(argv: string[]): ParsedArgs {
       json = true;
     } else if (flag === "--include-user") {
       includeUserFiles = true;
+    } else if (flag === "--dry-run") {
+      dryRun = true;
     } else if (flag === "--cwd") {
       const value = flags[index + 1];
       if (!value) {
@@ -126,7 +146,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     command,
     cwd,
     json,
-    includeUserFiles
+    includeUserFiles,
+    dryRun
   };
 }
 
@@ -135,7 +156,8 @@ function base(command: ParsedArgs["command"]): ParsedArgs {
     command,
     cwd: process.cwd(),
     json: false,
-    includeUserFiles: false
+    includeUserFiles: false,
+    dryRun: false
   };
 }
 
@@ -145,16 +167,19 @@ function helpText(): string {
 Kill wasted tokens. Keep better context.
 
 Usage:
-  dietoken gain [--json] [--include-user] [--cwd <path>]
-  dietoken scan [--json] [--include-user] [--cwd <path>]
-  dietoken plan [--json] [--include-user] [--cwd <path>]
+  dietoken gain  [--json] [--include-user] [--cwd <path>]
+  dietoken scan  [--json] [--include-user] [--cwd <path>]
+  dietoken plan  [--json] [--include-user] [--cwd <path>]
+  dietoken apply [--dry-run] [--json] [--include-user] [--cwd <path>]
 
 Commands:
   gain     Show token waste analytics and savings summary
   scan     Analyze Codex and Claude Code context files in detail
   plan     Write .dietoken/plan.md with optimization suggestions
+  apply    Auto-fix token waste: remove vague rules, duplicates, extract workflows to skills
 
 Options:
+  --dry-run       Show what apply would change without writing files
   --json          Print JSON
   --include-user  Include user-level ~/.codex and ~/.claude files
   --cwd <path>    Analyze another directory
