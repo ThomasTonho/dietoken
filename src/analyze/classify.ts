@@ -49,10 +49,12 @@ const hookPatterns = [
 ];
 
 export function analyzeFiles(files: ContextFile[], config: DietokenConfig): Finding[] {
+  const proseFiles = files.filter((file) => file.kind !== "config");
+
   return [
     ...findLargeFiles(files, config),
-    ...findLinePatterns(files),
-    ...findDuplicates(files)
+    ...findLinePatterns(proseFiles),
+    ...findDuplicates(proseFiles)
   ];
 }
 
