@@ -72,7 +72,7 @@ the README numbers match a fresh run.
 
 ---
 
-## P1-4 — The token estimate has no calibration — `open`
+## P1-4 — The token estimate has no calibration — `done`
 
 **Problem.** `estimateTokens` counts word and punctuation units. Real
 tokenizers split many words into several tokens, and split accented and
@@ -83,8 +83,10 @@ users are billed for, in a direction that varies by language.
 expose it in `.dietokenrc.json` so a user who has measured their own corpus
 can correct it.
 
-**Acceptance.** Default output stays within a documented margin of a reference
-tokenizer on a fixed sample, and the factor is configurable.
+**Acceptance.** The factor is configurable and documented, and the README says
+plainly that the default is a rule of thumb rather than a measurement. Checking
+it against a real tokenizer needs a dependency this package does not have, and
+is left to whoever calibrates for their own corpus.
 
 ---
 

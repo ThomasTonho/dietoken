@@ -7,6 +7,7 @@ export const defaultConfig: DietokenConfig = {
   largeFileErrorTokens: 4000,
   includeUserFiles: false,
   historyLimit: 500,
+  tokensPerUnit: 1.3,
   ignore: ["node_modules/**", "dist/**", "coverage/**", ".next/**", ".git/**"]
 };
 

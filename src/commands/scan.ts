@@ -3,7 +3,12 @@ import { analyzeFiles } from "../analyze/classify.js";
 import type { ContextFile, DietokenConfig, Finding, ScanOptions, ScanSummary } from "../types.js";
 
 export function scanProject(options: ScanOptions, config: DietokenConfig): ScanSummary {
-  const files = discoverFiles(options.cwd, options.includeUserFiles || config.includeUserFiles, config.ignore);
+  const files = discoverFiles(
+    options.cwd,
+    options.includeUserFiles || config.includeUserFiles,
+    config.ignore,
+    config.tokensPerUnit
+  );
   const findings = analyzeFiles(files, config);
   const totalTokens = files
     .filter((file) => isContext(file))

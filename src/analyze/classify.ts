@@ -54,8 +54,8 @@ export function analyzeFiles(files: ContextFile[], config: DietokenConfig): Find
 
   return [
     ...findLargeFiles(files, config),
-    ...findLinePatterns(proseFiles),
-    ...findDuplicates(proseFiles)
+    ...findLinePatterns(proseFiles, config),
+    ...findDuplicates(proseFiles, config)
   ];
 }
 
@@ -75,7 +75,7 @@ function findLargeFiles(files: ContextFile[], config: DietokenConfig): Finding[]
     });
 }
 
-function findLinePatterns(files: ContextFile[]): Finding[] {
+function findLinePatterns(files: ContextFile[], config: DietokenConfig): Finding[] {
   const findings: Finding[] = [];
 
   for (const file of files) {
@@ -96,7 +96,7 @@ function findLinePatterns(files: ContextFile[]): Finding[] {
           line: lineNumber,
           message: "Instruction is vague and hard for agents to verify.",
           suggestion: "Replace vague quality words with observable rules, commands, or examples.",
-          estimatedWasteTokens: estimateLineWaste(trimmed)
+          estimatedWasteTokens: estimateLineWaste(trimmed, config)
         });
       }
 
@@ -108,7 +108,7 @@ function findLinePatterns(files: ContextFile[]): Finding[] {
           line: lineNumber,
           message: "Workflow-like instruction appears in always-on context.",
           suggestion: "Move repeatable procedures to a skill so they load only when needed.",
-          estimatedWasteTokens: estimateLineWaste(trimmed)
+          estimatedWasteTokens: estimateLineWaste(trimmed, config)
         });
       }
 
@@ -120,7 +120,7 @@ function findLinePatterns(files: ContextFile[]): Finding[] {
           line: lineNumber,
           message: "Instruction seems tied to specific paths or file types.",
           suggestion: "Move this guidance closer to that path or into path-scoped rules when supported.",
-          estimatedWasteTokens: estimateLineWaste(trimmed)
+          estimatedWasteTokens: estimateLineWaste(trimmed, config)
         });
       }
 
@@ -132,7 +132,7 @@ function findLinePatterns(files: ContextFile[]): Finding[] {
           line: lineNumber,
           message: "Instruction tries to prevent a mechanical action.",
           suggestion: "Use a hook or permission policy for enforcement instead of relying only on prose.",
-          estimatedWasteTokens: estimateLineWaste(trimmed)
+          estimatedWasteTokens: estimateLineWaste(trimmed, config)
         });
       }
     });
@@ -141,7 +141,7 @@ function findLinePatterns(files: ContextFile[]): Finding[] {
   return findings;
 }
 
-function findDuplicates(files: ContextFile[]): Finding[] {
+function findDuplicates(files: ContextFile[], config: DietokenConfig): Finding[] {
   const seen = new Map<string, { file: string; line: number }>();
   const findings: Finding[] = [];
 
@@ -165,7 +165,7 @@ function findDuplicates(files: ContextFile[]): Finding[] {
               ? `Duplicate guidance already appears on line ${first.line} of this file.`
               : `Duplicate guidance already appears in ${first.file}:${first.line}.`,
           suggestion: "Keep this rule in one place to reduce token cost and avoid drift.",
-          estimatedWasteTokens: estimateLineWaste(line)
+          estimatedWasteTokens: estimateLineWaste(line, config)
         });
       } else if (!first) {
         seen.set(normalized, { file: file.relativePath, line: index + 1 });
@@ -184,6 +184,6 @@ function normalizeLine(line: string): string {
     .replace(/\s+/g, " ");
 }
 
-function estimateLineWaste(line: string): number {
-  return estimateTokens(line);
+function estimateLineWaste(line: string, config: DietokenConfig): number {
+  return estimateTokens(line, config.tokensPerUnit);
 }

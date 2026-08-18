@@ -158,9 +158,23 @@ Pass `--include-user` to also scan global files in `~/.claude` and `~/.codex`.
   "largeFileWarningTokens": 1500,
   "largeFileErrorTokens": 4000,
   "includeUserFiles": false,
+  "tokensPerUnit": 1.3,
+  "historyLimit": 500,
   "ignore": ["node_modules/**", "dist/**", "coverage/**"]
 }
 ```
+
+### Calibrating the estimate
+
+Dietoken counts word and punctuation units, then multiplies by
+`tokensPerUnit`. Real tokenizers split many words into more than one token, and
+split accented and non-English text more aggressively, so the raw unit count
+reads low. The default of 1.3 is a rule of thumb for Latin-script prose, not a
+measurement of any particular tokenizer.
+
+To calibrate for your own corpus, count the real tokens of a representative
+file with the tokenizer your agent uses, divide that by the unit count
+Dietoken reports at `"tokensPerUnit": 1`, and set the result.
 
 ## Development
 
