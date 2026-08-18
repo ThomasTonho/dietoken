@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, appendFileSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, basename } from "node:path";
 
@@ -15,11 +15,25 @@ export type HistoryRecord = {
 const historyDir = join(homedir(), ".dietoken");
 const historyFile = join(historyDir, "history.jsonl");
 
-export function appendHistory(record: HistoryRecord): void {
+export function appendHistory(record: HistoryRecord, limit = 500): void {
   if (!existsSync(historyDir)) {
     mkdirSync(historyDir, { recursive: true });
   }
   appendFileSync(historyFile, JSON.stringify(record) + "\n", "utf8");
+  trimHistory(limit);
+}
+
+function trimHistory(limit: number): void {
+  if (limit <= 0) {
+    return;
+  }
+
+  const lines = readFileSync(historyFile, "utf8").split("\n").filter(Boolean);
+  if (lines.length <= limit) {
+    return;
+  }
+
+  writeFileSync(historyFile, lines.slice(-limit).join("\n") + "\n", "utf8");
 }
 
 export function readHistory(): HistoryRecord[] {

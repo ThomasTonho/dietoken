@@ -71,7 +71,7 @@ function main(): void {
     }
 
     if (args.command === "scan") {
-      appendHistory(makeRecord(args.cwd, summary));
+      appendHistory(makeRecord(args.cwd, summary), config.historyLimit);
       if (args.json) {
         process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
       } else {
