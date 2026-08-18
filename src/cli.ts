@@ -117,6 +117,14 @@ function parseArgs(argv: string[]): ParsedArgs {
     throw new Error(`unknown command "${command}"`);
   }
 
+  if (flags.includes("--help") || flags.includes("-h")) {
+    return base("help");
+  }
+
+  if (flags.includes("--version") || flags.includes("-v")) {
+    return base("version");
+  }
+
   let cwd = process.cwd();
   let json = false;
   let includeUserFiles = false;
