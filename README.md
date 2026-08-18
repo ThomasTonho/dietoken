@@ -68,13 +68,14 @@ Dietoken scan
 Files analyzed: 3
 Total context estimate: 214 tokens
 Agent configuration: 85 tokens (not sent to the model)
+Resident per request: 159 tokens
 Always-on estimate: 149 tokens
 Estimated waste: 116 tokens
 
 Context files
 - CLAUDE.md 149 tokens claude/instructions/always-on
-- .claude/settings.json 85 tokens claude/config/on-demand
-- .claude/skills/deploy/SKILL.md 65 tokens claude/skill/on-demand
+- .claude/settings.json 85 tokens (0 resident) claude/config/on-demand
+- .claude/skills/deploy/SKILL.md 65 tokens (10 resident) claude/skill/on-demand
 
 Findings
 - warning vague-rule CLAUDE.md:7

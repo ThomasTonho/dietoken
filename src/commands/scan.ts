@@ -16,6 +16,7 @@ export function scanProject(options: ScanOptions, config: DietokenConfig): ScanS
   const configTokens = files
     .filter((file) => !isContext(file))
     .reduce((sum, file) => sum + file.tokenEstimate, 0);
+  const residentTokens = files.reduce((sum, file) => sum + file.residentTokens, 0);
   const alwaysOnTokens = files
     .filter((file) => file.alwaysOn)
     .reduce((sum, file) => sum + file.tokenEstimate, 0);
@@ -26,6 +27,7 @@ export function scanProject(options: ScanOptions, config: DietokenConfig): ScanS
     findings,
     totalTokens,
     configTokens,
+    residentTokens,
     alwaysOnTokens,
     estimatedWasteTokens
   };

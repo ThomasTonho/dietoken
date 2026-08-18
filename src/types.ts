@@ -15,6 +15,7 @@ export type ContextFile = {
   alwaysOn: boolean;
   content: string;
   tokenEstimate: number;
+  residentTokens: number;
 };
 
 export type Finding = {
@@ -32,6 +33,7 @@ export type ScanSummary = {
   findings: Finding[];
   totalTokens: number;
   configTokens: number;
+  residentTokens: number;
   alwaysOnTokens: number;
   estimatedWasteTokens: number;
 };
