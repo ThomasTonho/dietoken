@@ -188,3 +188,22 @@ same pull request as any further change to the estimate.
 
 **Acceptance.** A fresh run on each documented project reproduces the numbers
 in the README.
+
+---
+
+## P1-12 — A malformed config silently produces NaN — `done`
+
+**Problem.** `loadConfig` merged `.dietokenrc.json` into the defaults without
+checking any value. A string where a number belonged propagated through every
+calculation, and a broken file raised a parser error that never named the file.
+
+**Evidence.** With `{"tokensPerUnit":"muito"}` the scan printed
+`Total context estimate: NaN tokens`, `Always-on estimate: NaN tokens` and
+`Estimated waste: NaN tokens`, and exited successfully.
+
+**Change.** Validate the merged configuration at load time and fail with a
+message naming the file and the field. Wrap parse failures the same way.
+
+**Acceptance.** Every invalid value produces a specific error, and no scan can
+report NaN.
+
