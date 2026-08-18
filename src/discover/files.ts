@@ -16,6 +16,8 @@ type IgnoreMatcher = (path: string) => boolean;
 
 const maxImportDepth = 3;
 
+const skippedDirectories = new Set(["node_modules", ".git", "dist", "coverage"]);
+
 export function readContextFile(spec: FileSpec, cwd: string, tokensPerUnit = 1): ContextFile | undefined {
   if (!existsSync(spec.path) || !statSync(spec.path).isFile()) {
     return undefined;
@@ -184,6 +186,7 @@ function claudeProjectSpecs(cwd: string, isIgnored: IgnoreMatcher): FileSpec[] {
     instruction("claude", join(cwd, "CLAUDE.md"), "project"),
     instruction("claude", join(cwd, "CLAUDE.local.md"), "project"),
     instruction("claude", join(cwd, ".claude", "CLAUDE.md"), "project"),
+    config("claude", join(cwd, ".mcp.json"), "project"),
     config("claude", join(cwd, ".claude", "settings.json"), "project"),
     config("claude", join(cwd, ".claude", "settings.local.json"), "project"),
     ...recursiveSpecs("claude", join(cwd, ".claude", "rules"), ".md", "project", "rule", false, isIgnored),
@@ -211,7 +214,9 @@ function claudeUserSpecs(isIgnored: IgnoreMatcher): FileSpec[] {
     ...recursiveSpecs("claude", join(root, "rules"), ".md", "user", "rule", false, isIgnored),
     ...recursiveSpecs("claude", join(root, "skills"), "SKILL.md", "user", "skill", false, isIgnored),
     ...recursiveSpecs("claude", join(root, "agents"), ".md", "user", "agent", false, isIgnored),
-    ...recursiveSpecs("claude", join(root, "commands"), ".md", "user", "command", false, isIgnored)
+    ...recursiveSpecs("claude", join(root, "commands"), ".md", "user", "command", false, isIgnored),
+    ...recursiveSpecs("claude", join(root, "plugins"), "SKILL.md", "user", "skill", false, isIgnored),
+    config("claude", join(homedir(), ".claude.json"), "user")
   ];
 }
 
@@ -250,6 +255,10 @@ function recursiveSpecs(
     }
 
     if (entry.isDirectory()) {
+      if (skippedDirectories.has(entry.name)) {
+        continue;
+      }
+
       specs.push(...recursiveSpecs(agent, path, suffix, scope, kind, alwaysOn, isIgnored));
     } else if (entry.isFile() && entry.name.endsWith(suffix)) {
       specs.push({ agent, path, scope, kind, alwaysOn });
