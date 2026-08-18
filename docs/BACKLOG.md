@@ -162,7 +162,7 @@ resolution.
 
 ---
 
-## P3-10 — Scan history grows without bound — `open`
+## P3-10 — Scan history grows without bound — `done`
 
 **Problem.** `appendHistory` appends one JSON line per scan to
 `~/.dietoken/history.jsonl` and nothing ever trims it. On a repository that
