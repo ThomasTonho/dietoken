@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { estimateTokens } from "../analyze/tokenize.js";
 import type { AgentKind, ContextFile, ContextKind, ContextScope } from "../types.js";
 
@@ -14,26 +14,14 @@ type FileSpec = {
 
 type IgnoreMatcher = (path: string) => boolean;
 
-function resolveIncludes(content: string, filePath: string, depth: number): string {
-  if (depth <= 0) return content;
-
-  return content.replace(/^@(.+\.md)\s*$/gm, (_match, includeName: string) => {
-    const includePath = join(dirname(filePath), includeName.trim());
-    if (!existsSync(includePath) || !statSync(includePath).isFile()) {
-      return _match;
-    }
-    const includeContent = readFileSync(includePath, "utf8");
-    return resolveIncludes(includeContent, includePath, depth - 1);
-  });
-}
+const maxImportDepth = 3;
 
 export function readContextFile(spec: FileSpec, cwd: string): ContextFile | undefined {
   if (!existsSync(spec.path) || !statSync(spec.path).isFile()) {
     return undefined;
   }
 
-  const raw = readFileSync(spec.path, "utf8");
-  const content = resolveIncludes(raw, spec.path, 3);
+  const content = readFileSync(spec.path, "utf8");
   return {
     ...spec,
     relativePath: spec.scope === "project" ? relative(cwd, spec.path) || "." : spec.path,
@@ -53,10 +41,82 @@ export function discoverFiles(cwd: string, includeUserFiles: boolean, ignore: st
     specs.push(...codexUserSpecs(), ...claudeUserSpecs(isIgnored));
   }
 
-  return specs
+  const files = specs
     .filter((spec) => !isIgnored(spec.path))
     .map((spec) => readContextFile(spec, cwd))
     .filter((file): file is ContextFile => Boolean(file));
+
+  return [...files, ...discoverImports(files, cwd, isIgnored)];
+}
+
+function discoverImports(files: ContextFile[], cwd: string, isIgnored: IgnoreMatcher): ContextFile[] {
+  const seen = new Set(files.map((file) => file.path));
+  const imported: ContextFile[] = [];
+  const queue = files.filter((file) => file.kind === "instructions").map((file) => ({ file, depth: 0 }));
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current || current.depth >= maxImportDepth) {
+      continue;
+    }
+
+    for (const target of importTargets(current.file.content)) {
+      const path = resolveImport(current.file.path, target);
+      if (seen.has(path) || isIgnored(path)) {
+        continue;
+      }
+      seen.add(path);
+
+      const file = readContextFile(
+        {
+          agent: current.file.agent,
+          path,
+          scope: current.file.scope,
+          kind: "instructions",
+          alwaysOn: current.file.alwaysOn
+        },
+        cwd
+      );
+
+      if (file) {
+        imported.push(file);
+        queue.push({ file, depth: current.depth + 1 });
+      }
+    }
+  }
+
+  return imported;
+}
+
+function importTargets(content: string): string[] {
+  const targets: string[] = [];
+  let insideFence = false;
+
+  for (const line of content.split(/\r?\n/)) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      insideFence = !insideFence;
+      continue;
+    }
+
+    if (insideFence) {
+      continue;
+    }
+
+    const match = /^@(.+\.md)\s*$/.exec(line);
+    if (match) {
+      targets.push(match[1].trim());
+    }
+  }
+
+  return targets;
+}
+
+function resolveImport(fromPath: string, target: string): string {
+  if (target.startsWith("~/")) {
+    return join(homedir(), target.slice(2));
+  }
+
+  return isAbsolute(target) ? target : resolve(dirname(fromPath), target);
 }
 
 function codexProjectSpecs(cwd: string, isIgnored: IgnoreMatcher): FileSpec[] {
