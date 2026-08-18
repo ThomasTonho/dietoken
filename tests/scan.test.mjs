@@ -134,3 +134,22 @@ test("duplicate guidance is reported inside a single file", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("scanProject discovers agents and commands", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    mkdirSync(join(dir, ".claude", "agents"), { recursive: true });
+    mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
+    writeFileSync(join(dir, ".claude", "agents", "reviewer.md"), "Revisa o diff e aponta riscos.\n", "utf8");
+    writeFileSync(join(dir, ".claude", "commands", "deploy.md"), "Publica a versao atual.\n", "utf8");
+
+    const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
+    const kinds = new Map(summary.files.map((file) => [file.relativePath, file.kind]));
+
+    assert.equal(kinds.get(join(".claude", "agents", "reviewer.md")), "agent");
+    assert.equal(kinds.get(join(".claude", "commands", "deploy.md")), "command");
+    assert.ok(summary.files.every((file) => file.alwaysOn === false));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

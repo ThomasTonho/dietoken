@@ -137,7 +137,9 @@ function claudeProjectSpecs(cwd: string, isIgnored: IgnoreMatcher): FileSpec[] {
     config("claude", join(cwd, ".claude", "settings.json"), "project"),
     config("claude", join(cwd, ".claude", "settings.local.json"), "project"),
     ...recursiveSpecs("claude", join(cwd, ".claude", "rules"), ".md", "project", "rule", false, isIgnored),
-    ...recursiveSpecs("claude", join(cwd, ".claude", "skills"), "SKILL.md", "project", "skill", false, isIgnored)
+    ...recursiveSpecs("claude", join(cwd, ".claude", "skills"), "SKILL.md", "project", "skill", false, isIgnored),
+    ...recursiveSpecs("claude", join(cwd, ".claude", "agents"), ".md", "project", "agent", false, isIgnored),
+    ...recursiveSpecs("claude", join(cwd, ".claude", "commands"), ".md", "project", "command", false, isIgnored)
   ];
 }
 
@@ -156,7 +158,10 @@ function claudeUserSpecs(isIgnored: IgnoreMatcher): FileSpec[] {
   return [
     instruction("claude", join(root, "CLAUDE.md"), "user"),
     config("claude", join(root, "settings.json"), "user"),
-    ...recursiveSpecs("claude", join(root, "rules"), ".md", "user", "rule", false, isIgnored)
+    ...recursiveSpecs("claude", join(root, "rules"), ".md", "user", "rule", false, isIgnored),
+    ...recursiveSpecs("claude", join(root, "skills"), "SKILL.md", "user", "skill", false, isIgnored),
+    ...recursiveSpecs("claude", join(root, "agents"), ".md", "user", "agent", false, isIgnored),
+    ...recursiveSpecs("claude", join(root, "commands"), ".md", "user", "command", false, isIgnored)
   ];
 }
 
