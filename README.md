@@ -55,6 +55,25 @@ Results vary by project. The more a `CLAUDE.md` has grown organically — accumu
 
 `apply` closes the loop: it removes duplicated rules in-place and extracts workflow sections to on-demand skills automatically. Vague rules are reported but never rewritten for you, because a vague word usually shares its line with a real instruction.
 
+## What the numbers mean
+
+**Resident per request** is what the agent carries into every message: always-on
+instructions, plus the name and description of each skill, agent and command it
+knows about, including the ones installed by plugins. It is the number worth
+cutting.
+
+**Total context estimate** adds the bodies those entries load once invoked. A
+large skill body costs nothing while it sits idle.
+
+**Agent configuration** is settings and hooks. It never reaches the model and is
+listed only so the weight is accounted for.
+
+Two limits worth stating plainly. Resident tokens sit in the cached prefix of a
+conversation, so cutting them reduces what the model reads on every turn rather
+than reducing spend by the same proportion. And the tool definitions exposed by
+MCP servers are not counted at all, because they exist only in a running server,
+so a machine with servers configured carries more than this reports.
+
 ## Example output
 
 Both blocks below are the real output of the project in `examples/demo`, which

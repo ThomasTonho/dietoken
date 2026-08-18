@@ -251,7 +251,7 @@ because they exist only in a running server.
 
 ---
 
-## P2-15 — Savings are reported without accounting for prompt caching — `open`
+## P2-15 — Savings are reported without accounting for prompt caching — `done`
 
 **Problem.** Reports present waste as tokens removed per request. The always-on
 prefix is cached, so a cached token costs a fraction of a fresh one, and the
