@@ -106,6 +106,9 @@ function formatHistoricalGain(history: HistoryRecord[], current: ScanSummary): s
     lines.push("");
   }
 
+  lines.push("  These tokens sit in the cached prefix of every request, so removing");
+  lines.push("  them shrinks the context the model reads, not the bill by the same share.");
+  lines.push("");
   lines.push(`  Run "dietoken scan" to update your project's record.`);
   lines.push("");
 
