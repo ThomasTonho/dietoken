@@ -46,3 +46,24 @@ test("scanProject honors ignore patterns and accented Portuguese rules", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("scanProject does not apply prose rules to config files", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    mkdirSync(join(dir, ".claude"), { recursive: true });
+    writeFileSync(
+      join(dir, ".claude", "settings.json"),
+      JSON.stringify({ permissions: { deny: ["Read(node_modules/**)", "Read(dist/**)"] } }, null, 2),
+      "utf8"
+    );
+    writeFileSync(join(dir, "CLAUDE.md"), "Never run cat node_modules.\n", "utf8");
+
+    const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
+    const configFindings = summary.findings.filter((finding) => finding.file.includes("settings.json"));
+
+    assert.deepEqual(configFindings, []);
+    assert.ok(summary.findings.some((finding) => finding.code === "hook-candidate" && finding.file === "CLAUDE.md"));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
