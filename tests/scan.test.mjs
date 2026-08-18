@@ -67,3 +67,21 @@ test("scanProject does not apply prose rules to config files", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("scanProject counts each wasteful line once and never exceeds the total", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    const filler = "O projeto usa Node com TypeScript para gerar relatorios de contexto.\n";
+    writeFileSync(join(dir, "CLAUDE.md"), `Use clean code and never run node_modules.\n${filler.repeat(4)}`, "utf8");
+
+    const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
+    const onLineOne = summary.findings.filter((finding) => finding.line === 1);
+    const worst = Math.max(...onLineOne.map((finding) => finding.estimatedWasteTokens ?? 0));
+
+    assert.ok(onLineOne.length > 1, "line should trigger more than one rule");
+    assert.equal(summary.estimatedWasteTokens, worst);
+    assert.ok(summary.estimatedWasteTokens <= summary.totalTokens);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
