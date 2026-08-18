@@ -88,7 +88,7 @@ tokenizer on a fixed sample, and the factor is configurable.
 
 ---
 
-## P1-5 — Waste estimates and token estimates use different units — `open`
+## P1-5 — Waste estimates and token estimates use different units — `done`
 
 **Problem.** `estimateLineWaste` returns `ceil(length / 5)` characters-based
 units, while file totals come from word-unit counting. The two are not
@@ -172,3 +172,17 @@ scans per commit the file grows forever and `gain` reads all of it.
 
 **Acceptance.** History stays at or below the configured size across repeated
 scans.
+
+---
+
+## P1-11 — README benchmarks predate the estimator changes — `open`
+
+**Problem.** The numbers published in the README were measured before waste
+stopped being counted once per matching rule and before line waste switched to
+the shared estimator. They no longer describe what the tool prints.
+
+**Change.** Re-run the three benchmark projects and update the README, in the
+same pull request as any further change to the estimate.
+
+**Acceptance.** A fresh run on each documented project reproduces the numbers
+in the README.

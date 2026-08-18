@@ -1,3 +1,4 @@
+import { estimateTokens } from "./tokenize.js";
 import type { ContextFile, DietokenConfig, Finding } from "../types.js";
 
 const vaguePatterns = [
@@ -181,5 +182,5 @@ function normalizeLine(line: string): string {
 }
 
 function estimateLineWaste(line: string): number {
-  return Math.max(5, Math.ceil(line.length / 5));
+  return estimateTokens(line);
 }
