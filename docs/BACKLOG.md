@@ -105,7 +105,7 @@ its own line.
 
 ---
 
-## P2-6 — `vague-rule` deletes whole lines on a single word match — `open`
+## P2-6 — `vague-rule` deletes whole lines on a single word match — `done`
 
 **Problem.** `FIXABLE_CODES` includes `vague-rule`, so `apply` deletes any
 line matching words such as `simple`, `good` or `properly`. A line can carry a

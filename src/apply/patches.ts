@@ -22,7 +22,7 @@ export type ExtractSkillPatch = {
 
 export type Patch = RemovePatch | ExtractSkillPatch;
 
-const FIXABLE_CODES = new Set(["vague-rule", "duplicate-guidance", "workflow-in-always-on"]);
+const FIXABLE_CODES = new Set(["duplicate-guidance", "workflow-in-always-on"]);
 
 export function canFix(finding: Finding): boolean {
   return FIXABLE_CODES.has(finding.code) && finding.line !== undefined;
@@ -38,13 +38,12 @@ export function buildPatches(file: ContextFile, findings: Finding[], cwd: string
     const idx = finding.line - 1;
     if (covered.has(idx)) continue;
 
-    if (finding.code === "vague-rule" || finding.code === "duplicate-guidance") {
-      const verb = finding.code === "vague-rule" ? "remove vague rule" : "remove duplicate";
+    if (finding.code === "duplicate-guidance") {
       patches.push({
         kind: "remove",
         startLine: finding.line,
         endLine: finding.line,
-        label: `${verb}: "${snippet(lines[idx])}"`,
+        label: `remove duplicate: "${snippet(lines[idx])}"`,
         tokensSaved: finding.estimatedWasteTokens ?? 0
       });
       covered.add(idx);
