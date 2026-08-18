@@ -177,17 +177,18 @@ scans.
 
 ---
 
-## P1-11 — README benchmarks predate the estimator changes — `open`
+## P1-11 — README benchmarks predate the estimator changes — `done`
 
 **Problem.** The numbers published in the README were measured before waste
 stopped being counted once per matching rule and before line waste switched to
 the shared estimator. They no longer describe what the tool prints.
 
-**Change.** Re-run the three benchmark projects and update the README, in the
-same pull request as any further change to the estimate.
+**Change.** The three projects were private and could not be published, so the
+examples now come from `examples/demo`, a small project checked into the
+repository, and a test compares the README blocks against a fresh run.
 
-**Acceptance.** A fresh run on each documented project reproduces the numbers
-in the README.
+**Acceptance.** `npm test` fails whenever the documented output stops matching
+what the tool prints.
 
 ---
 
