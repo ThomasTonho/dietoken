@@ -2,7 +2,7 @@ export type AgentKind = "codex" | "claude";
 
 export type ContextScope = "project" | "user";
 
-export type ContextKind = "instructions" | "skill" | "rule" | "hook" | "config";
+export type ContextKind = "instructions" | "skill" | "agent" | "command" | "rule" | "hook" | "config";
 
 export type Severity = "info" | "warning" | "error";
 

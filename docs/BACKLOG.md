@@ -134,7 +134,7 @@ occurrence.
 
 ---
 
-## P2-8 — Discovery misses agents and commands — `open`
+## P2-8 — Discovery misses agents and commands — `done`
 
 **Problem.** Project discovery covers `CLAUDE.md`, `.claude/rules`,
 `.claude/skills`, `AGENTS.md` and the config files, but not `.claude/agents`
