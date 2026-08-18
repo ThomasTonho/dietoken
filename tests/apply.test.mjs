@@ -34,7 +34,7 @@ test("apply removes vague-rule lines", () => {
     "CLAUDE.md": "# Rules\n\nAlways use best practices.\nUse clean code.\nPrefer TypeScript.\n"
   });
   try {
-    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false);
+    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
     const content = readFileSync(join(dir, "CLAUDE.md"), "utf8");
 
     assert.ok(result.totalTokensSaved > 0);
@@ -52,7 +52,7 @@ test("apply removes duplicate-guidance lines", () => {
     "CLAUDE.local.md": "Never commit secrets to the repository.\n"
   });
   try {
-    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false);
+    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
 
     assert.ok(result.files.some((f) => f.patches.some((p) => p.label.includes("duplicate"))));
   } finally {
@@ -74,7 +74,7 @@ test("apply extracts workflow sections to skills", () => {
     ].join("\n")
   });
   try {
-    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false);
+    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
     const content = readFileSync(join(dir, "CLAUDE.md"), "utf8");
     const skillPath = join(dir, ".claude", "skills", "deploy-process", "SKILL.md");
 
@@ -93,7 +93,7 @@ test("apply returns skipped findings for non-automatable codes", () => {
     "CLAUDE.md": "Never run cat node_modules.\n"
   });
   try {
-    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false);
+    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
 
     assert.ok(result.skipped.some((f) => f.code === "hook-candidate"));
     assert.equal(result.files.length, 0);
@@ -107,10 +107,30 @@ test("apply reports zero savings on already-clean context", () => {
     "CLAUDE.md": "Run `npm test` before every commit.\n"
   });
   try {
-    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false);
+    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
 
     assert.equal(result.totalTokensSaved, 0);
     assert.equal(result.files.length, 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("apply refuses to edit a file it cannot recover", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    const file = join(dir, "CLAUDE.md");
+    const before = "Use clean code sempre.\n";
+    writeFileSync(file, before, "utf8");
+
+    assert.throws(
+      () => applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, false),
+      /not inside a git repository/
+    );
+    assert.equal(readFileSync(file, "utf8"), before);
+
+    applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
+    assert.notEqual(readFileSync(file, "utf8"), before);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

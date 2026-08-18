@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { applyPatches, buildPatches, canFix, type Patch } from "../apply/patches.js";
@@ -19,7 +20,8 @@ export type ApplyResult = {
 export function applyFixes(
   options: ScanOptions,
   config: DietokenConfig,
-  dryRun: boolean
+  dryRun: boolean,
+  force = false
 ): ApplyResult {
   const summary = scanProject(options, config);
 
@@ -46,6 +48,10 @@ export function applyFixes(
     if (patches.length === 0) continue;
 
     if (!dryRun) {
+      if (!force) {
+        assertRecoverable(contextFile.path);
+      }
+
       const { newContent, skills } = applyPatches(contextFile.content, patches);
       writeFileSync(contextFile.path, newContent, "utf8");
       for (const skill of skills) {
@@ -66,4 +72,32 @@ export function applyFixes(
     totalTokensSaved: files.reduce((sum, f) => sum + f.tokensSaved, 0),
     skipped
   };
+}
+
+function assertRecoverable(path: string): void {
+  const status = gitStatus(path);
+
+  if (status === undefined) {
+    throw new Error(
+      `${path} is not inside a git repository, so these edits could not be undone. Commit it somewhere, or re-run with --force.`
+    );
+  }
+
+  if (status !== "") {
+    throw new Error(
+      `${path} has uncommitted changes that these edits would overwrite. Commit them, or re-run with --force.`
+    );
+  }
+}
+
+function gitStatus(path: string): string | undefined {
+  try {
+    return execFileSync("git", ["status", "--porcelain", "--", path], {
+      cwd: dirname(path),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"]
+    }).trim();
+  } catch {
+    return undefined;
+  }
 }
