@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,5 +28,31 @@ test("history keeps only the configured number of records", () => {
   } finally {
     rmSync(home, { recursive: true, force: true });
     rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("gain survives a history file with damaged records", () => {
+  const home = mkdtempSync(join(tmpdir(), "dietoken-home-"));
+  try {
+    mkdirSync(join(home, ".dietoken"), { recursive: true });
+    writeFileSync(
+      join(home, ".dietoken", "history.jsonl"),
+      [
+        JSON.stringify({ ts: "2026-01-01T00:00:00.000Z", cwd: "/a", projectName: "quebrado", filesAnalyzed: 1, alwaysOnTokens: null, estimatedWasteTokens: null, findingCount: 0 }),
+        "{ nao e json",
+        JSON.stringify({ ts: "2026-01-02T00:00:00.000Z", cwd: "/b", projectName: "inteiro", filesAnalyzed: 2, alwaysOnTokens: 120, estimatedWasteTokens: 30, findingCount: 4 })
+      ].join("\n") + "\n",
+      "utf8"
+    );
+
+    const output = execFileSync(process.execPath, [cli, "gain"], {
+      encoding: "utf8",
+      env: { ...process.env, HOME: home }
+    });
+
+    assert.match(output, /inteiro/);
+    assert.doesNotMatch(output, /quebrado/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
   }
 });

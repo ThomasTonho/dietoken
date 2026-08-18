@@ -48,7 +48,25 @@ export function readHistory(): HistoryRecord[] {
         return null;
       }
     })
-    .filter((r): r is HistoryRecord => r !== null);
+    .filter(isUsable);
+}
+
+function isUsable(record: HistoryRecord | null): record is HistoryRecord {
+  if (record === null || typeof record !== "object") {
+    return false;
+  }
+
+  return (
+    typeof record.projectName === "string" &&
+    isCount(record.filesAnalyzed) &&
+    isCount(record.alwaysOnTokens) &&
+    isCount(record.estimatedWasteTokens) &&
+    isCount(record.findingCount)
+  );
+}
+
+function isCount(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
 }
 
 export function makeRecord(cwd: string, summary: {
