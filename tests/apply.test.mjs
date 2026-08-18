@@ -29,18 +29,16 @@ test("apply --dry-run does not modify files", () => {
   }
 });
 
-test("apply removes vague-rule lines", () => {
+test("apply reports vague rules without deleting them", () => {
   const dir = tmpProject({
     "CLAUDE.md": "# Rules\n\nAlways use best practices.\nUse clean code.\nPrefer TypeScript.\n"
   });
   try {
+    const before = readFileSync(join(dir, "CLAUDE.md"), "utf8");
     const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
-    const content = readFileSync(join(dir, "CLAUDE.md"), "utf8");
 
-    assert.ok(result.totalTokensSaved > 0);
-    assert.ok(!content.includes("best practices"));
-    assert.ok(!content.includes("clean code"));
-    assert.ok(content.includes("Prefer TypeScript"));
+    assert.equal(readFileSync(join(dir, "CLAUDE.md"), "utf8"), before);
+    assert.ok(result.skipped.some((finding) => finding.code === "vague-rule"));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -120,7 +118,7 @@ test("apply refuses to edit a file it cannot recover", () => {
   const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
   try {
     const file = join(dir, "CLAUDE.md");
-    const before = "Use clean code sempre.\n";
+    const before = "# Deploy procedure\n\n1. build\n2. test\n";
     writeFileSync(file, before, "utf8");
 
     assert.throws(
@@ -131,6 +129,22 @@ test("apply refuses to edit a file it cannot recover", () => {
 
     applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
     assert.notEqual(readFileSync(file, "utf8"), before);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("apply keeps lines that mix a real rule with a vague word", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    const file = join(dir, "CLAUDE.md");
+    const rule = "Keep it simple and run npm test before every push.\n";
+    writeFileSync(file, rule, "utf8");
+
+    const result = applyFixes({ cwd: dir, includeUserFiles: false }, defaultConfig, false, true);
+
+    assert.equal(readFileSync(file, "utf8"), rule);
+    assert.ok(result.skipped.some((finding) => finding.code === "vague-rule"));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
