@@ -174,3 +174,26 @@ test("configuration weight is reported apart from context weight", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("a skill costs its description while it sits idle, not its body", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    mkdirSync(join(dir, ".claude", "skills", "deploy"), { recursive: true });
+    writeFileSync(join(dir, "CLAUDE.md"), "Regra sempre carregada do projeto.\n", "utf8");
+    writeFileSync(
+      join(dir, ".claude", "skills", "deploy", "SKILL.md"),
+      `---\nname: deploy\ndescription: Ship the service to production\n---\n\n${"Passo detalhado do procedimento de publicacao.\n".repeat(40)}`,
+      "utf8"
+    );
+
+    const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
+    const skill = summary.files.find((file) => file.kind === "skill");
+    const claudeMd = summary.files.find((file) => file.kind === "instructions");
+
+    assert.ok(skill.tokenEstimate > 200, "the body should be large");
+    assert.ok(skill.residentTokens < 20, "only the description stays resident");
+    assert.equal(summary.residentTokens, claudeMd.tokenEstimate + skill.residentTokens);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

@@ -210,7 +210,7 @@ report NaN.
 
 ---
 
-## P1-13 — Skill bodies are counted as always-present context — `open`
+## P1-13 — Skill bodies are counted as always-present context — `done`
 
 **Problem.** A skill is loaded on invocation; what sits in every request is its
 name and one-line description. `scan` counts the whole `SKILL.md` body in the

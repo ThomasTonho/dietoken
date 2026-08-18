@@ -26,8 +26,47 @@ export function readContextFile(spec: FileSpec, cwd: string, tokensPerUnit = 1):
     ...spec,
     relativePath: spec.scope === "project" ? relative(cwd, spec.path) || "." : spec.path,
     content,
-    tokenEstimate: estimateTokens(content, tokensPerUnit)
+    tokenEstimate: estimateTokens(content, tokensPerUnit),
+    residentTokens: residentCost(spec, content, tokensPerUnit)
   };
+}
+
+function residentCost(spec: FileSpec, content: string, tokensPerUnit: number): number {
+  if (spec.kind === "config" || spec.kind === "hook") {
+    return 0;
+  }
+
+  if (spec.alwaysOn) {
+    return estimateTokens(content, tokensPerUnit);
+  }
+
+  const summary = frontMatterSummary(content);
+  return summary === undefined ? 0 : estimateTokens(summary, tokensPerUnit);
+}
+
+function frontMatterSummary(content: string): string | undefined {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content);
+  if (!match) {
+    return undefined;
+  }
+
+  const name = field(match[1], "name");
+  const description = field(match[1], "description");
+
+  if (name === undefined && description === undefined) {
+    return undefined;
+  }
+
+  return [name, description].filter(Boolean).join(": ");
+}
+
+function field(frontMatter: string, key: string): string | undefined {
+  const match = new RegExp(`^${key}:\\s*(.+(?:\\r?\\n\\s{2,}.+)*)$`, "m").exec(frontMatter);
+  if (!match) {
+    return undefined;
+  }
+
+  return match[1].trim().replace(/^["']|["']$/g, "");
 }
 
 export function discoverFiles(

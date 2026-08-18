@@ -11,6 +11,7 @@ export function formatPlan(summary: ScanSummary): string {
   lines.push(`- Files analyzed: ${summary.files.length}`);
   lines.push(`- Total context estimate: ${summary.totalTokens} tokens`);
   lines.push(`- Agent configuration: ${summary.configTokens} tokens (not sent to the model)`);
+  lines.push(`- Resident per request: ${summary.residentTokens} tokens`);
   lines.push(`- Always-on estimate: ${summary.alwaysOnTokens} tokens`);
   lines.push(`- Estimated waste: ${summary.estimatedWasteTokens} tokens`);
   lines.push("");
