@@ -208,3 +208,53 @@ message naming the file and the field. Wrap parse failures the same way.
 **Acceptance.** Every invalid value produces a specific error, and no scan can
 report NaN.
 
+---
+
+## P1-13 — Skill bodies are counted as always-present context — `open`
+
+**Problem.** A skill is loaded on invocation; what sits in every request is its
+name and one-line description. `scan` counts the whole `SKILL.md` body in the
+context total, so a machine with a few large skills reports a context cost two
+orders of magnitude above what it pays.
+
+**Evidence.** Scanning a real user configuration reports 60,551 context tokens,
+of which about 59,000 are skill bodies. The always-on total for the same
+machine is 565 tokens.
+
+**Change.** Count the front matter description toward resident cost and report
+the body as invocation cost, as separate numbers.
+
+**Acceptance.** Resident cost for a project with large skills stays close to
+the always-on total, and the report says what each skill costs when invoked.
+
+---
+
+## P1-14 — MCP servers and plugins are never measured — `open`
+
+**Problem.** Tool schemas from MCP servers and the listing of installed plugin
+skills are part of the resident context of every request, often larger than
+every instruction file combined. Neither is discovered.
+
+**Evidence.** `grep -rn mcp src/` returns nothing, and a real machine carries
+52 MB of plugins that the scan never opens.
+
+**Change.** Discover `.mcp.json` and the installed plugin manifests, and report
+what their descriptions and tool schemas add to every request.
+
+**Acceptance.** A project with an MCP server configured shows that server's
+resident cost in `scan`.
+
+---
+
+## P2-15 — Savings are reported without accounting for prompt caching — `open`
+
+**Problem.** Reports present waste as tokens removed per request. The always-on
+prefix is cached, so a cached token costs a fraction of a fresh one, and the
+headline number reads as more money than it is.
+
+**Change.** Say plainly in the README and in `gain` that savings apply to a
+cached prefix, or express them as context share rather than as spend.
+
+**Acceptance.** No output implies a billing saving the caching model does not
+support.
+

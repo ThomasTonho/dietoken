@@ -45,7 +45,7 @@ dietoken scan --include-user     # Include ~/.claude and ~/.codex global files
 dietoken scan --json             # Machine-readable output
 dietoken scan --cwd ../project   # Analyze another directory
 dietoken plan                    # Generate a step-by-step optimization plan
-dietoken apply                   # Auto-fix: remove vague rules, extract workflows to skills
+dietoken apply                   # Auto-fix: remove duplicated rules, extract workflows to skills
 dietoken apply --dry-run         # Preview changes without writing files
 ```
 
@@ -53,7 +53,7 @@ dietoken apply --dry-run         # Preview changes without writing files
 
 Results vary by project. The more a `CLAUDE.md` has grown organically — accumulating workflows, vague conventions, and one-off instructions — the more waste dietoken finds and eliminates. Freshly written, intentional context scores close to 0%.
 
-`apply` closes the loop: it removes vague rules in-place and extracts workflow sections to on-demand skills automatically.
+`apply` closes the loop: it removes duplicated rules in-place and extracts workflow sections to on-demand skills automatically. Vague rules are reported but never rewritten for you, because a vague word usually shares its line with a real instruction.
 
 ## Example output
 
