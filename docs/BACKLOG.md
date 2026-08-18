@@ -280,3 +280,22 @@ audit may execute processes.
 **Acceptance.** A project with a server configured reports what that server's
 tool definitions add to every request, or says plainly that it cannot.
 
+---
+
+## P2-17 — A damaged history record crashes `gain` — `done`
+
+**Problem.** `readHistory` dropped lines that failed to parse but accepted any
+record that parsed, so a record written before configuration was validated,
+where `NaN` had serialised as `null`, reached the formatter and threw
+`Cannot read properties of null (reading 'toLocaleString')`. The command then
+failed on every later run, since nothing rewrites the file.
+
+**Evidence.** A real history file holding 19 records, one of them written
+during a scan with an invalid `tokensPerUnit`, made `dietoken gain` exit with
+that error.
+
+**Change.** Validate records on read and drop the ones that cannot be
+formatted.
+
+**Acceptance.** `gain` reports the intact records and ignores damaged ones.
+
