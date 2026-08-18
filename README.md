@@ -57,75 +57,77 @@ Results vary by project. The more a `CLAUDE.md` has grown organically — accumu
 
 ## Example output
 
+Both blocks below are the real output of the project in `examples/demo`, which
+ships with this repository. Reproduce them with the same commands.
+
 ```
-$ dietoken scan
+$ dietoken scan --cwd examples/demo
 
 Dietoken scan
 
 Files analyzed: 3
-Total context estimate: 4,210 tokens
-Always-on estimate: 1,120 tokens
-Estimated waste: 390 tokens
+Total context estimate: 214 tokens
+Agent configuration: 85 tokens (not sent to the model)
+Always-on estimate: 149 tokens
+Estimated waste: 116 tokens
 
 Context files
-- CLAUDE.md                    1,120 tokens  claude / always-on
-- .claude/skills/deploy/SKILL.md 2,440 tokens  claude / on-demand
-- .claude/skills/review/SKILL.md   650 tokens  claude / on-demand
+- CLAUDE.md 149 tokens claude/instructions/always-on
+- .claude/settings.json 85 tokens claude/config/on-demand
+- .claude/skills/deploy/SKILL.md 65 tokens claude/skill/on-demand
 
 Findings
-- warning vague-rule CLAUDE.md:18
+- warning vague-rule CLAUDE.md:7
   Instruction is vague and hard for agents to verify.
   Suggestion: Replace vague quality words with observable rules, commands, or examples.
-- warning workflow-in-always-on CLAUDE.md:60
+- warning workflow-in-always-on CLAUDE.md:12
   Workflow-like instruction appears in always-on context.
   Suggestion: Move repeatable procedures to a skill so they load only when needed.
-- info hook-candidate CLAUDE.md:71
+- warning workflow-in-always-on CLAUDE.md:14
+  Workflow-like instruction appears in always-on context.
+  Suggestion: Move repeatable procedures to a skill so they load only when needed.
+- warning workflow-in-always-on CLAUDE.md:15
+  Workflow-like instruction appears in always-on context.
+  Suggestion: Move repeatable procedures to a skill so they load only when needed.
+- warning workflow-in-always-on CLAUDE.md:16
+  Workflow-like instruction appears in always-on context.
+  Suggestion: Move repeatable procedures to a skill so they load only when needed.
+- warning workflow-in-always-on CLAUDE.md:17
+  Workflow-like instruction appears in always-on context.
+  Suggestion: Move repeatable procedures to a skill so they load only when needed.
+- warning duplicate-guidance CLAUDE.md:21
+  Duplicate guidance already appears on line 8 of this file.
+  Suggestion: Keep this rule in one place to reduce token cost and avoid drift.
+- info hook-candidate CLAUDE.md:9
   Instruction tries to prevent a mechanical action.
   Suggestion: Use a hook or permission policy for enforcement instead of relying only on prose.
-```
-
-```
-$ dietoken gain
-
-Dietoken — Savings Report
-════════════════════════════════════════════════════════════════════
-
-  Total scans        4
-  Projects tracked   2
-  Waste identified   1,240 tokens (cumulative across all scans)
-
-By Project
-────────────────────────────────────────────────────────────────────
-  #  Project                  Scans   First scan         Now      Saved
-────────────────────────────────────────────────────────────────────
-  1.  my-api                      3    1,124 tok   1,124 tok         —
-  2.  my-frontend                 1      855 tok     855 tok         —
-────────────────────────────────────────────────────────────────────
+- info path-scoped-candidate CLAUDE.md:10
+  Instruction seems tied to specific paths or file types.
+  Suggestion: Move this guidance closer to that path or into path-scoped rules when supported.
 ```
 
 ## Example output: apply
 
 ```
-$ dietoken apply --dry-run
+$ dietoken apply --cwd examples/demo --dry-run
 
 Dietoken apply --dry-run
 
-  Would apply 10 fixes across 2 files
-  Saved ~237 tokens
+  Would apply 2 fixes across 1 file
+  Saved ~17 tokens
 
 Changes
   CLAUDE.md
-    ✓ extract "Key Rules" → .claude/skills/key-rules/SKILL.md  -25 tok
-    ✓ extract "Adding a New Cookbook" → .claude/skills/adding-a-new-cookbook/SKILL.md  -10 tok
-  .claude/skills/cookbook-audit/SKILL.md
-    ✓ remove vague rule: "Always read style_guide.md first"  -33 tok
-    ✓ remove vague rule: "Follows language best practices"  -8 tok
-    ✓ remove vague rule: "What Makes a Good Cookbook"  -6 tok
-    ...
+    ✓ extract "Release procedure" → .claude/skills/release-procedure/SKILL.md  -6 tok
+    ✓ remove duplicate: "Prefer TypeScript over JavaScript in new files."  -11 tok
 
 Skipped (need manual attention)
-  - hook-candidate .claude/skills/cookbook-audit/SKILL.md:71
+  - vague-rule CLAUDE.md:7
+    Replace vague quality words with observable rules, commands, or examples.
+  - hook-candidate CLAUDE.md:9
     Use a hook or permission policy for enforcement instead of relying only on prose.
+  - path-scoped-candidate CLAUDE.md:10
+    Move this guidance closer to that path or into path-scoped rules when supported.
 
 Run without --dry-run to apply changes.
 ```
