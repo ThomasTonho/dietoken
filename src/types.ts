@@ -41,6 +41,7 @@ export type DietokenConfig = {
   largeFileErrorTokens: number;
   includeUserFiles: boolean;
   historyLimit: number;
+  tokensPerUnit: number;
   ignore: string[];
 };
 

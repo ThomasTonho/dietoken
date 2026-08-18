@@ -107,7 +107,7 @@ test("no finding claims more waste than its own line costs", () => {
     assert.ok(summary.findings.length > 0);
     for (const finding of summary.findings) {
       if (finding.line === undefined) continue;
-      const cost = estimateTokens(lines[finding.line - 1]);
+      const cost = estimateTokens(lines[finding.line - 1], defaultConfig.tokensPerUnit);
       assert.ok(
         (finding.estimatedWasteTokens ?? 0) <= cost,
         `${finding.code} claims ${finding.estimatedWasteTokens} of ${cost} tokens`

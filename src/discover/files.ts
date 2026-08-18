@@ -16,7 +16,7 @@ type IgnoreMatcher = (path: string) => boolean;
 
 const maxImportDepth = 3;
 
-export function readContextFile(spec: FileSpec, cwd: string): ContextFile | undefined {
+export function readContextFile(spec: FileSpec, cwd: string, tokensPerUnit = 1): ContextFile | undefined {
   if (!existsSync(spec.path) || !statSync(spec.path).isFile()) {
     return undefined;
   }
@@ -26,11 +26,16 @@ export function readContextFile(spec: FileSpec, cwd: string): ContextFile | unde
     ...spec,
     relativePath: spec.scope === "project" ? relative(cwd, spec.path) || "." : spec.path,
     content,
-    tokenEstimate: estimateTokens(content)
+    tokenEstimate: estimateTokens(content, tokensPerUnit)
   };
 }
 
-export function discoverFiles(cwd: string, includeUserFiles: boolean, ignore: string[] = []): ContextFile[] {
+export function discoverFiles(
+  cwd: string,
+  includeUserFiles: boolean,
+  ignore: string[] = [],
+  tokensPerUnit = 1
+): ContextFile[] {
   const isIgnored = createIgnoreMatcher(cwd, ignore);
   const specs: FileSpec[] = [
     ...codexProjectSpecs(cwd, isIgnored),
@@ -43,13 +48,18 @@ export function discoverFiles(cwd: string, includeUserFiles: boolean, ignore: st
 
   const files = specs
     .filter((spec) => !isIgnored(spec.path))
-    .map((spec) => readContextFile(spec, cwd))
+    .map((spec) => readContextFile(spec, cwd, tokensPerUnit))
     .filter((file): file is ContextFile => Boolean(file));
 
-  return [...files, ...discoverImports(files, cwd, isIgnored)];
+  return [...files, ...discoverImports(files, cwd, isIgnored, tokensPerUnit)];
 }
 
-function discoverImports(files: ContextFile[], cwd: string, isIgnored: IgnoreMatcher): ContextFile[] {
+function discoverImports(
+  files: ContextFile[],
+  cwd: string,
+  isIgnored: IgnoreMatcher,
+  tokensPerUnit: number
+): ContextFile[] {
   const seen = new Set(files.map((file) => file.path));
   const imported: ContextFile[] = [];
   const queue = files.filter((file) => file.kind === "instructions").map((file) => ({ file, depth: 0 }));
@@ -75,7 +85,8 @@ function discoverImports(files: ContextFile[], cwd: string, isIgnored: IgnoreMat
           kind: "instructions",
           alwaysOn: current.file.alwaysOn
         },
-        cwd
+        cwd,
+        tokensPerUnit
       );
 
       if (file) {

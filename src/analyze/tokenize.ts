@@ -1,4 +1,4 @@
-export function estimateTokens(input: string): number {
+export function estimateTokens(input: string, tokensPerUnit = 1): number {
   const normalized = input.trim();
   if (!normalized) {
     return 0;
@@ -9,5 +9,5 @@ export function estimateTokens(input: string): number {
     return 0;
   }
 
-  return units.length;
+  return Math.ceil(units.length * tokensPerUnit);
 }
