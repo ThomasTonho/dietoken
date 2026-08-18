@@ -31,6 +31,7 @@ export type ScanSummary = {
   files: ContextFile[];
   findings: Finding[];
   totalTokens: number;
+  configTokens: number;
   alwaysOnTokens: number;
   estimatedWasteTokens: number;
 };

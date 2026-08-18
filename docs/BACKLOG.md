@@ -54,7 +54,7 @@ changes nothing; `--force` restores current behaviour.
 
 ---
 
-## P1-3 — Config files are counted as context — `open`
+## P1-3 — Config files are counted as context — `done`
 
 **Problem.** `totalTokens` sums every discovered file, including
 `.claude/settings.json` and `.codex/config.toml`. Those files configure the

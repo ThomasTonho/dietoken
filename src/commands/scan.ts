@@ -1,11 +1,16 @@
 import { discoverFiles } from "../discover/files.js";
 import { analyzeFiles } from "../analyze/classify.js";
-import type { DietokenConfig, Finding, ScanOptions, ScanSummary } from "../types.js";
+import type { ContextFile, DietokenConfig, Finding, ScanOptions, ScanSummary } from "../types.js";
 
 export function scanProject(options: ScanOptions, config: DietokenConfig): ScanSummary {
   const files = discoverFiles(options.cwd, options.includeUserFiles || config.includeUserFiles, config.ignore);
   const findings = analyzeFiles(files, config);
-  const totalTokens = files.reduce((sum, file) => sum + file.tokenEstimate, 0);
+  const totalTokens = files
+    .filter((file) => isContext(file))
+    .reduce((sum, file) => sum + file.tokenEstimate, 0);
+  const configTokens = files
+    .filter((file) => !isContext(file))
+    .reduce((sum, file) => sum + file.tokenEstimate, 0);
   const alwaysOnTokens = files
     .filter((file) => file.alwaysOn)
     .reduce((sum, file) => sum + file.tokenEstimate, 0);
@@ -15,9 +20,14 @@ export function scanProject(options: ScanOptions, config: DietokenConfig): ScanS
     files,
     findings,
     totalTokens,
+    configTokens,
     alwaysOnTokens,
     estimatedWasteTokens
   };
+}
+
+function isContext(file: ContextFile): boolean {
+  return file.kind !== "config" && file.kind !== "hook";
 }
 
 function sumWaste(findings: Finding[]): number {

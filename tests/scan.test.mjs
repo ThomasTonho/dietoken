@@ -153,3 +153,24 @@ test("scanProject discovers agents and commands", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("configuration weight is reported apart from context weight", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    mkdirSync(join(dir, ".claude"), { recursive: true });
+    writeFileSync(join(dir, "CLAUDE.md"), "Regra curta do projeto.\n", "utf8");
+    writeFileSync(
+      join(dir, ".claude", "settings.json"),
+      JSON.stringify({ permissions: { allow: ["Bash(npm test)", "Read(src/**)"] } }, null, 2),
+      "utf8"
+    );
+
+    const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
+    const claudeMd = summary.files.find((file) => file.relativePath === "CLAUDE.md");
+
+    assert.equal(summary.totalTokens, claudeMd.tokenEstimate);
+    assert.ok(summary.configTokens > 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
