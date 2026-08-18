@@ -8,7 +8,7 @@ Status: `open`, `in progress`, `done`.
 
 ---
 
-## P0-1 — `apply` destroys `@import` directives — `open`
+## P0-1 — `apply` destroys `@import` directives — `done`
 
 **Problem.** `readContextFile` stores the *resolved* content of a file, with
 every `@file.md` import already inlined. `applyFixes` writes that resolved
@@ -147,7 +147,7 @@ or `.claude/commands`. Both hold instruction text that reaches the model.
 
 ---
 
-## P2-9 — Imports starting with `~/` are not resolved — `open`
+## P2-9 — Imports starting with `~/` are not resolved — `done`
 
 **Problem.** Import paths are resolved relative to the importing file only.
 `@~/.claude/shared.md`, which Claude Code accepts, is never found and its cost
@@ -156,6 +156,9 @@ is invisible.
 **Change.** Expand a leading `~/` to the home directory before resolving.
 
 **Acceptance.** An import written as `@~/...` is discovered and counted.
+
+Closed together with P0-1, which replaced the inlining code that owned path
+resolution.
 
 ---
 
