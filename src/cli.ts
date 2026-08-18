@@ -15,6 +15,7 @@ type ParsedArgs = {
   json: boolean;
   includeUserFiles: boolean;
   dryRun: boolean;
+  force: boolean;
 };
 
 const version = "0.1.0";
@@ -48,7 +49,8 @@ function main(): void {
       const applyResult = applyFixes(
         { cwd: args.cwd, includeUserFiles: args.includeUserFiles },
         config,
-        args.dryRun
+        args.dryRun,
+      args.force
       );
       if (args.json) {
         process.stdout.write(`${JSON.stringify(applyResult, null, 2)}\n`);
@@ -129,6 +131,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   let json = false;
   let includeUserFiles = false;
   let dryRun = false;
+  let force = false;
 
   for (let index = 0; index < flags.length; index += 1) {
     const flag = flags[index];
@@ -138,6 +141,8 @@ function parseArgs(argv: string[]): ParsedArgs {
       includeUserFiles = true;
     } else if (flag === "--dry-run") {
       dryRun = true;
+    } else if (flag === "--force") {
+      force = true;
     } else if (flag === "--cwd") {
       const value = flags[index + 1];
       if (!value) {
@@ -155,7 +160,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     cwd,
     json,
     includeUserFiles,
-    dryRun
+    dryRun,
+    force
   };
 }
 
@@ -165,7 +171,8 @@ function base(command: ParsedArgs["command"]): ParsedArgs {
     cwd: process.cwd(),
     json: false,
     includeUserFiles: false,
-    dryRun: false
+    dryRun: false,
+    force: false
   };
 }
 
@@ -187,6 +194,7 @@ Commands:
   apply    Auto-fix token waste: remove vague rules, duplicates, extract workflows to skills
 
 Options:
+  --force         Apply even when the file is dirty or untracked
   --dry-run       Show what apply would change without writing files
   --json          Print JSON
   --include-user  Include user-level ~/.codex and ~/.claude files

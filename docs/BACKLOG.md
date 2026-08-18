@@ -37,7 +37,7 @@ the bytes on disk.
 
 ---
 
-## P0-2 — `apply` rewrites files with no backup and no clean-tree check — `open`
+## P0-2 — `apply` rewrites files with no backup and no clean-tree check — `done`
 
 **Problem.** `applyFixes` calls `writeFileSync` on the user's instruction
 files. There is no backup, no confirmation and no check that the working tree
