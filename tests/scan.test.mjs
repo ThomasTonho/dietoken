@@ -1,9 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { defaultConfig } from "../dist/config.js";
+import { estimateTokens } from "../dist/analyze/tokenize.js";
 import { scanProject } from "../dist/commands/scan.js";
 
 test("scanProject finds Codex and Claude instruction files", () => {
@@ -81,6 +82,32 @@ test("scanProject counts each wasteful line once and never exceeds the total", (
     assert.ok(onLineOne.length > 1, "line should trigger more than one rule");
     assert.equal(summary.estimatedWasteTokens, worst);
     assert.ok(summary.estimatedWasteTokens <= summary.totalTokens);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("no finding claims more waste than its own line costs", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    writeFileSync(
+      join(dir, "CLAUDE.md"),
+      "Use clean code and never run node_modules.\nDeploy procedure documented properly.\nOk.\n",
+      "utf8"
+    );
+
+    const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
+    const lines = readFileSync(join(dir, "CLAUDE.md"), "utf8").split("\n");
+
+    assert.ok(summary.findings.length > 0);
+    for (const finding of summary.findings) {
+      if (finding.line === undefined) continue;
+      const cost = estimateTokens(lines[finding.line - 1]);
+      assert.ok(
+        (finding.estimatedWasteTokens ?? 0) <= cost,
+        `${finding.code} claims ${finding.estimatedWasteTokens} of ${cost} tokens`
+      );
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
