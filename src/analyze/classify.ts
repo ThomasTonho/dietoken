@@ -154,13 +154,16 @@ function findDuplicates(files: ContextFile[]): Finding[] {
       }
 
       const first = seen.get(normalized);
-      if (first && first.file !== file.relativePath) {
+      if (first) {
         findings.push({
           severity: "warning",
           code: "duplicate-guidance",
           file: file.relativePath,
           line: index + 1,
-          message: `Duplicate guidance already appears in ${first.file}:${first.line}.`,
+          message:
+            first.file === file.relativePath
+              ? `Duplicate guidance already appears on line ${first.line} of this file.`
+              : `Duplicate guidance already appears in ${first.file}:${first.line}.`,
           suggestion: "Keep this rule in one place to reduce token cost and avoid drift.",
           estimatedWasteTokens: estimateLineWaste(line)
         });

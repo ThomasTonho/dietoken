@@ -72,8 +72,13 @@ test("scanProject does not apply prose rules to config files", () => {
 test("scanProject counts each wasteful line once and never exceeds the total", () => {
   const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
   try {
-    const filler = "O projeto usa Node com TypeScript para gerar relatorios de contexto.\n";
-    writeFileSync(join(dir, "CLAUDE.md"), `Use clean code and never run node_modules.\n${filler.repeat(4)}`, "utf8");
+    const filler = [
+      "O projeto usa Node com TypeScript para gerar relatorios de contexto.",
+      "Cada execucao grava um registro no historico local do usuario.",
+      "As mensagens do relatorio saem em ingles por padrao no terminal.",
+      "O pacote publica somente a pasta compilada e a documentacao."
+    ].join("\n");
+    writeFileSync(join(dir, "CLAUDE.md"), `Use clean code and never run node_modules.\n${filler}\n`, "utf8");
 
     const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
     const onLineOne = summary.findings.filter((finding) => finding.line === 1);
@@ -108,6 +113,23 @@ test("no finding claims more waste than its own line costs", () => {
         `${finding.code} claims ${finding.estimatedWasteTokens} of ${cost} tokens`
       );
     }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("duplicate guidance is reported inside a single file", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dietoken-"));
+  try {
+    const rule = "Sempre descreva o comando exato que valida a mudanca antes de abrir o pull request.";
+    writeFileSync(join(dir, "CLAUDE.md"), `# Regras\n\n${rule}\n\n## Revisao\n\n${rule}\n`, "utf8");
+
+    const summary = scanProject({ cwd: dir, includeUserFiles: false }, defaultConfig);
+    const duplicates = summary.findings.filter((finding) => finding.code === "duplicate-guidance");
+
+    assert.equal(duplicates.length, 1);
+    assert.equal(duplicates[0].line, 7);
+    assert.match(duplicates[0].message, /line 3 of this file/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -119,7 +119,7 @@ survives `apply` and is still reported by `scan`.
 
 ---
 
-## P2-7 — Duplicate detection ignores repeats inside one file — `open`
+## P2-7 — Duplicate detection ignores repeats inside one file — `done`
 
 **Problem.** `findDuplicates` only reports a repeat when it appears in a
 different file (`first.file !== file.relativePath`). The same rule stated
